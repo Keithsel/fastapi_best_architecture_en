@@ -7,13 +7,13 @@ from backend.app.task.celery import celery_app
 
 @celery_app.task
 async def delete_db_opera_log() -> int:
-    """自动删除数据库操作日志"""
+    """Automatically delete database operation logs"""
     result = await opera_log_service.delete_all()
     return result
 
 
 @celery_app.task
 async def delete_db_login_log() -> int:
-    """自动删除数据库登录日志"""
+    """Automatically delete database login logs"""
     result = await login_log_service.delete_all()
     return result

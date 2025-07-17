@@ -4,5 +4,5 @@ import sys
 
 from pathlib import Path
 
-# 导入项目根目录
+# Import the project root directory
 sys.path.append(str(Path(__file__).resolve().parent.parent.parent.parent))

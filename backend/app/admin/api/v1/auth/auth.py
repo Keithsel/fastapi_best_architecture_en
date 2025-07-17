@@ -16,7 +16,7 @@ from backend.common.security.jwt import DependsJwtAuth
 router = APIRouter()
 
 
-@router.post('/login/swagger', summary='swagger 调试专用', description='用于快捷获取 token 进行 swagger 认证')
+@router.post('/login/swagger', summary='For Swagger Debugging', description='Quickly obtain a token for Swagger authentication')
 async def login_swagger(obj: Annotated[HTTPBasicCredentials, Depends()]) -> GetSwaggerToken:
     token, user = await auth_service.swagger_login(obj=obj)
     return GetSwaggerToken(access_token=token, user=user)
@@ -24,8 +24,8 @@ async def login_swagger(obj: Annotated[HTTPBasicCredentials, Depends()]) -> GetS
 
 @router.post(
     '/login',
-    summary='用户登录',
-    description='json 格式登录, 仅支持在第三方api工具调试, 例如: postman',
+    summary='User Login',
+    description='Login in JSON format, only supported for debugging with third-party API tools, e.g., Postman',
     dependencies=[Depends(RateLimiter(times=5, minutes=1))],
 )
 async def login(
@@ -35,19 +35,19 @@ async def login(
     return response_base.success(data=data)
 
 
-@router.get('/codes', summary='获取所有授权码', description='适配 vben admin v5', dependencies=[DependsJwtAuth])
+@router.get('/codes', summary='Get All Authorization Codes', description='Compatible with vben admin v5', dependencies=[DependsJwtAuth])
 async def get_codes(request: Request) -> ResponseSchemaModel[list[str]]:
     codes = await auth_service.get_codes(request=request)
     return response_base.success(data=codes)
 
 
-@router.post('/tokens', summary='刷新 token')
+@router.post('/tokens', summary='Refresh Token')
 async def refresh_token(request: Request) -> ResponseSchemaModel[GetNewToken]:
     data = await auth_service.refresh_token(request=request)
     return response_base.success(data=data)
 
 
-@router.post('/logout', summary='用户登出')
+@router.post('/logout', summary='User Logout')
 async def logout(request: Request, response: Response) -> ResponseModel:
     await auth_service.logout(request=request, response=response)
     return response_base.success()

@@ -9,7 +9,7 @@ from backend.utils.import_parse import import_module_cached
 
 
 def get_app_models():
-    """获取 app 所有模型类"""
+    """Get all model classes from app"""
     app_path = os.path.join(BASE_PATH, 'app')
     list_dirs = os.listdir(app_path)
 
@@ -26,7 +26,7 @@ def get_app_models():
             module_path = f'backend.app.{app}.model'
             module = import_module_cached(module_path)
         except Exception as e:
-            log.warning(f'应用 {app} 中不包含 model 相关配置: {e}')
+            log.warning(f'Module {app} does not contain model configuration: {e}')
             continue
 
         for name, obj in inspect.getmembers(module):
@@ -36,7 +36,7 @@ def get_app_models():
     return classes
 
 
-# import all app models for auto create db tables
+# Import all app models for auto-creating db tables
 for cls in get_app_models():
     class_name = cls.__name__
     if class_name not in globals():

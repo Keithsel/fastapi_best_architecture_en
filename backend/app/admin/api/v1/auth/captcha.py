@@ -15,12 +15,13 @@ router = APIRouter()
 
 @router.get(
     '/captcha',
-    summary='获取登录验证码',
+    summary='Get login captcha',
     dependencies=[Depends(RateLimiter(times=5, seconds=10))],
 )
 async def get_captcha(request: Request) -> ResponseSchemaModel[GetCaptchaDetail]:
     """
-    此接口可能存在性能损耗，尽管是异步接口，但是验证码生成是IO密集型任务，使用线程池尽量减少性能损耗
+    This endpoint may have performance overhead. Although it is an async endpoint,
+    captcha generation is an IO-intensive task, so a thread pool is used to minimize performance loss.
     """
     img_type: str = 'base64'
     img, code = await run_in_threadpool(img_captcha, img_byte=img_type)

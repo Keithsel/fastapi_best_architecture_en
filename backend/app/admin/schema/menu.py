@@ -9,37 +9,37 @@ from backend.common.schema import SchemaBase
 
 
 class MenuSchemaBase(SchemaBase):
-    """菜单基础模型"""
+    """Menu Base Model"""
 
-    title: str = Field(description='菜单标题')
-    name: str = Field(description='菜单名称')
-    path: str | None = Field(None, description='路由地址')
-    parent_id: int | None = Field(None, description='菜单父级 ID')
-    sort: int = Field(0, ge=0, description='排序')
-    icon: str | None = Field(None, description='图标')
-    type: MenuType = Field(MenuType.directory, description='菜单类型（0目录 1菜单 2按钮 3内嵌 4外链）')
-    component: str | None = Field(None, description='组件路径')
-    perms: str | None = Field(None, description='权限标识')
-    status: StatusType = Field(StatusType.enable, description='状态')
-    display: StatusType = Field(StatusType.enable, description='是否显示')
-    cache: StatusType = Field(StatusType.enable, description='是否缓存')
-    link: str | None = Field(None, description='外链地址')
-    remark: str | None = Field(None, description='备注')
+    title: str = Field(description='Menu Title')
+    name: str = Field(description='Menu Name')
+    path: str | None = Field(None, description='Route Path')
+    parent_id: int | None = Field(None, description='Parent Menu ID')
+    sort: int = Field(0, ge=0, description='Sort Order')
+    icon: str | None = Field(None, description='Icon')
+    type: MenuType = Field(MenuType.directory, description='Menu Type (0 Directory 1 Menu 2 Button 3 Embedded 4 External Link)')
+    component: str | None = Field(None, description='Component Path')
+    perms: str | None = Field(None, description='Permission Identifier')
+    status: StatusType = Field(StatusType.enable, description='Status')
+    display: StatusType = Field(StatusType.enable, description='Display')
+    cache: StatusType = Field(StatusType.enable, description='Cache')
+    link: str | None = Field(None, description='External Link')
+    remark: str | None = Field(None, description='Remark')
 
 
 class CreateMenuParam(MenuSchemaBase):
-    """创建菜单参数"""
+    """Create Menu Parameters"""
 
 
 class UpdateMenuParam(MenuSchemaBase):
-    """更新菜单参数"""
+    """Update Menu Parameters"""
 
 
 class GetMenuDetail(MenuSchemaBase):
-    """菜单详情"""
+    """Menu Detail"""
 
     model_config = ConfigDict(from_attributes=True)
 
-    id: int = Field(description='菜单 ID')
-    created_time: datetime = Field(description='创建时间')
-    updated_time: datetime | None = Field(None, description='更新时间')
+    id: int = Field(description='Menu ID')
+    created_time: datetime = Field(description='Created Time')
+    updated_time: datetime | None = Field(None, description='Updated Time')

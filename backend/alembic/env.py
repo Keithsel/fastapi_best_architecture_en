@@ -73,7 +73,7 @@ def run_migrations_offline():
 
 
 def do_run_migrations(connection: Connection) -> None:
-    # 当迁移无变化时，不生成迁移记录
+    # When there are no changes in the migration, do not generate a migration record
     def process_revision_directives(context, revision, directives):
         if alembic_config.cmd_opts.autogenerate:
             script = directives[0]

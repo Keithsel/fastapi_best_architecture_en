@@ -11,7 +11,7 @@ from backend.utils.timezone import timezone
 
 
 class TzAwareCrontab(schedules.crontab):
-    """时区感知 Crontab"""
+    """Timezone-aware Crontab"""
 
     def __init__(self, minute='*', hour='*', day_of_week='*', day_of_month='*', month_of_year='*', app=None):
         super().__init__(
@@ -26,9 +26,9 @@ class TzAwareCrontab(schedules.crontab):
 
     def is_due(self, last_run_at: datetime) -> tuple[bool, int | float]:
         """
-        任务到期状态
+        Task due status
 
-        :param last_run_at: 最后运行时间
+        :param last_run_at: Last run time
         :return:
         """
         rem_delta = self.remaining_estimate(last_run_at)
@@ -53,19 +53,19 @@ class TzAwareCrontab(schedules.crontab):
         )
 
 
-def crontab_verify(filed: Literal['m', 'h', 'dow', 'dom', 'moy'], value: str, raise_exc: bool = True) -> bool:
+def crontab_verify(field: Literal['m', 'h', 'dow', 'dom', 'moy'], value: str, raise_exc: bool = True) -> bool:
     """
-    验证 Celery crontab 表达式
+    Validate Celery crontab expression
 
-    :param filed: 验证的字段
-    :param value: 验证的值
-    :param raise_exc: 是否抛出异常
+    :param field: Field to validate
+    :param value: Value to validate
+    :param raise_exc: Whether to raise an exception
     :return:
     """
     valid = True
 
     try:
-        match filed:
+        match field:
             case 'm':
                 crontab_parser(60, 0).parse(value)
             case 'h':
@@ -77,10 +77,10 @@ def crontab_verify(filed: Literal['m', 'h', 'dow', 'dom', 'moy'], value: str, ra
             case 'moy':
                 crontab_parser(12, 1).parse(value)
             case _:
-                raise errors.ServerError(msg=f'无效字段：{filed}')
+                raise errors.ServerError(msg=f'Invalid field: {field}')
     except ParseException:
         valid = False
         if raise_exc:
-            raise errors.RequestError(msg=f'crontab 值 {value} 非法')
+            raise errors.RequestError(msg=f'crontab value {value} is invalid')
 
     return valid

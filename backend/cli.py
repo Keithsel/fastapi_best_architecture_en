@@ -29,15 +29,15 @@ def run(host: str, port: int, reload: bool, workers: int | None) -> None:
     openapi_url = url + settings.FASTAPI_OPENAPI_URL
 
     panel_content = Text()
-    panel_content.append(f'📝 Swagger 文档: {docs_url}\n', style='blue')
-    panel_content.append(f'📚 Redoc   文档: {redoc_url}\n', style='yellow')
+    panel_content.append(f'📝 Swagger Docs: {docs_url}\n', style='blue')
+    panel_content.append(f'📚 Redoc   Docs: {redoc_url}\n', style='yellow')
     panel_content.append(f'📡 OpenAPI JSON: {openapi_url}\n', style='green')
     panel_content.append(
-        '🌍 fba 官方文档: https://fastapi-practices.github.io/fastapi_best_architecture_docs/',
+        '🌍 fba Official Docs: https://fastapi-practices.github.io/fastapi_best_architecture_docs/',
         style='cyan',
     )
 
-    console.print(Panel(panel_content, title='fba 服务信息', border_style='purple', padding=(1, 2)))
+    console.print(Panel(panel_content, title='fba Service Info', border_style='purple', padding=(1, 2)))
     granian.Granian(
         target='backend.main:app',
         interface='asgi',
@@ -53,12 +53,12 @@ async def install_plugin(
     path: str, repo_url: str, no_sql: bool, db_type: DataBaseType, pk_type: PrimaryKeyType
 ) -> None:
     if not path and not repo_url:
-        raise cappa.Exit('path 或 repo_url 必须指定其中一项', code=1)
+        raise cappa.Exit('Either path or repo_url must be specified', code=1)
     if path and repo_url:
-        raise cappa.Exit('path 和 repo_url 不能同时指定', code=1)
+        raise cappa.Exit('path and repo_url cannot be specified at the same time', code=1)
 
     plugin_name = None
-    console.print(Text('开始安装插件...', style='bold cyan'))
+    console.print(Text('Starting plugin installation...', style='bold cyan'))
 
     try:
         if path:
@@ -66,11 +66,11 @@ async def install_plugin(
         if repo_url:
             plugin_name = await install_git_plugin(repo_url=repo_url)
 
-        console.print(Text(f'插件 {plugin_name} 安装成功', style='bold green'))
+        console.print(Text(f'Plugin {plugin_name} installed successfully', style='bold green'))
 
         sql_file = await get_plugin_sql(plugin_name, db_type, pk_type)
         if sql_file and not no_sql:
-            console.print(Text('开始自动执行插件 SQL 脚本...', style='bold cyan'))
+            console.print(Text('Automatically executing plugin SQL script...', style='bold cyan'))
             await execute_sql_scripts(sql_file)
 
     except Exception as e:
@@ -84,12 +84,12 @@ async def execute_sql_scripts(sql_scripts: str) -> None:
             for stmt in stmts:
                 await db.execute(text(stmt))
         except Exception as e:
-            raise cappa.Exit(f'SQL 脚本执行失败：{e}', code=1)
+            raise cappa.Exit(f'SQL script execution failed: {e}', code=1)
 
-    console.print(Text('SQL 脚本已执行完成', style='bold green'))
+    console.print(Text('SQL script executed successfully', style='bold green'))
 
 
-@cappa.command(help='运行服务')
+@cappa.command(help='Run the service')
 @dataclass
 class Run:
     host: Annotated[
@@ -97,65 +97,65 @@ class Run:
         cappa.Arg(
             long=True,
             default='127.0.0.1',
-            help='提供服务的主机 IP 地址，对于本地开发，请使用 `127.0.0.1`。'
-            '要启用公共访问，例如在局域网中，请使用 `0.0.0.0`',
+            help='Host IP address to provide the service. For local development, use `127.0.0.1`.'
+            'To enable public access, such as on a LAN, use `0.0.0.0`',
         ),
     ]
     port: Annotated[
         int,
-        cappa.Arg(long=True, default=8000, help='提供服务的主机端口号'),
+        cappa.Arg(long=True, default=8000, help='Port number to provide the service'),
     ]
     no_reload: Annotated[
         bool,
-        cappa.Arg(long=True, default=False, help='禁用在（代码）文件更改时自动重新加载服务器'),
+        cappa.Arg(long=True, default=False, help='Disable automatic server reload on (code) file changes'),
     ]
     workers: Annotated[
         int | None,
-        cappa.Arg(long=True, default=None, help='使用多个工作进程，必须与 `--no-reload` 同时使用'),
+        cappa.Arg(long=True, default=None, help='Use multiple worker processes, must be used with `--no-reload`'),
     ]
 
     def __call__(self):
         run(host=self.host, port=self.port, reload=self.no_reload, workers=self.workers)
 
 
-@cappa.command(help='新增插件')
+@cappa.command(help='Add a plugin')
 @dataclass
 class Add:
     path: Annotated[
         str | None,
-        cappa.Arg(long=True, help='ZIP 插件的本地完整路径'),
+        cappa.Arg(long=True, help='Full local path to the ZIP plugin'),
     ]
     repo_url: Annotated[
         str | None,
-        cappa.Arg(long=True, help='Git 插件的仓库地址'),
+        cappa.Arg(long=True, help='Git repository URL of the plugin'),
     ]
     no_sql: Annotated[
         bool,
-        cappa.Arg(long=True, default=False, help='禁用插件 SQL 脚本自动执行'),
+        cappa.Arg(long=True, default=False, help='Disable automatic execution of plugin SQL scripts'),
     ]
     db_type: Annotated[
         DataBaseType,
-        cappa.Arg(long=True, default='mysql', help='执行插件 SQL 脚本的数据库类型'),
+        cappa.Arg(long=True, default='mysql', help='Database type for executing plugin SQL scripts'),
     ]
     pk_type: Annotated[
         PrimaryKeyType,
-        cappa.Arg(long=True, default='autoincrement', help='执行插件 SQL 脚本数据库主键类型'),
+        cappa.Arg(long=True, default='autoincrement', help='Primary key type for plugin SQL script database'),
     ]
 
     async def __call__(self):
         await install_plugin(self.path, self.repo_url, self.no_sql, self.db_type, self.pk_type)
 
 
-@cappa.command(help='一个高效的 fba 命令行界面')
+@cappa.command(help='An efficient fba command line interface')
 @dataclass
 class FbaCli:
     version: Annotated[
         bool,
-        cappa.Arg(short='-V', long=True, default=False, help='打印当前版本号'),
+        cappa.Arg(short='-V', long=True, default=False, help='Print current version'),
     ]
     sql: Annotated[
         str,
-        cappa.Arg(long=True, default='', help='在事务中执行 SQL 脚本'),
+        cappa.Arg(long=True, default='', help='Execute SQL script in a transaction'),
     ]
     subcmd: cappa.Subcommands[Run | Add | None] = None
 
@@ -167,5 +167,5 @@ class FbaCli:
 
 
 def main() -> None:
-    output = cappa.Output(error_format='[red]Error[/]: {message}\n\n更多信息，尝试 "[cyan]--help[/]"')
+    output = cappa.Output(error_format='[red]Error[/]: {message}\n\nFor more info, try "[cyan]--help[/]"')
     asyncio.run(cappa.invoke_async(FbaCli, output=output))

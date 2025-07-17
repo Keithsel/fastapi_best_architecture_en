@@ -20,12 +20,12 @@ class _TaskRunner:
         atexit.register(self.close)
 
     def close(self):
-        """关闭事件循环"""
+        """Close the event loop"""
         if self.__loop:
             self.__loop.stop()
 
     def _target(self):
-        """后台线程目标"""
+        """Background thread target"""
         loop = self.__loop
         try:
             loop.run_forever()
@@ -33,7 +33,7 @@ class _TaskRunner:
             loop.close()
 
     def run(self, coro):
-        """在后台线程上同步运行协程"""
+        """Synchronously run a coroutine on the background thread"""
         with self.__lock:
             name = f'{threading.current_thread().name} - runner'
             if self.__loop is None:
@@ -48,20 +48,20 @@ _runner_map = weakref.WeakValueDictionary()
 
 
 def run_await(coro: Callable[..., Awaitable[T]]) -> Callable[..., T]:
-    """将协程包装在一个函数中，该函数会阻塞，直到它执行完为止"""
+    """Wrap a coroutine in a function that blocks until it finishes"""
 
     def wrapped(*args, **kwargs):
         name = threading.current_thread().name
         inner = coro(*args, **kwargs)
         try:
-            # 如果当前此线程中正在运行循环
-            # 使用任务运行程序
+            # If an event loop is running in this thread,
+            # use the task runner
             asyncio.get_running_loop()
             if name not in _runner_map:
                 _runner_map[name] = _TaskRunner()
             return _runner_map[name].run(inner)
         except RuntimeError:
-            # 如果没有，请创建一个新的事件循环
+            # If not, create a new event loop
             loop = asyncio.get_event_loop()
             return loop.run_until_complete(inner)
 

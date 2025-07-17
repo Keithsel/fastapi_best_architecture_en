@@ -18,25 +18,25 @@ from backend.database.db import async_db_session
 
 
 class TaskSchedulerService:
-    """任务调度服务类"""
+    """Task Scheduler Service Class"""
 
     @staticmethod
     async def get(*, pk) -> TaskScheduler | None:
         """
-        获取任务调度详情
+        Get task scheduler details
 
-        :param pk: 任务调度 ID
+        :param pk: Task scheduler ID
         :return:
         """
         async with async_db_session() as db:
             task_scheduler = await task_scheduler_dao.get(db, pk)
             if not task_scheduler:
-                raise errors.NotFoundError(msg='任务调度不存在')
+                raise errors.NotFoundError(msg='Task scheduler does not exist')
             return task_scheduler
 
     @staticmethod
     async def get_all() -> Sequence[TaskScheduler]:
-        """获取所有任务调度"""
+        """Get all task schedulers"""
         async with async_db_session() as db:
             task_schedulers = await task_scheduler_dao.get_all(db)
             return task_schedulers
@@ -44,10 +44,10 @@ class TaskSchedulerService:
     @staticmethod
     async def get_select(*, name: str | None, type: int | None) -> Select:
         """
-        获取任务调度列表查询条件
+        Get query conditions for task scheduler list
 
-        :param name: 任务调度名称
-        :param type: 任务调度类型
+        :param name: Task scheduler name
+        :param type: Task scheduler type
         :return:
         """
         return await task_scheduler_dao.get_list(name=name, type=type)
@@ -55,33 +55,33 @@ class TaskSchedulerService:
     @staticmethod
     async def create(*, obj: CreateTaskSchedulerParam) -> None:
         """
-        创建任务调度
+        Create a task scheduler
 
-        :param obj: 任务调度创建参数
+        :param obj: Task scheduler creation parameters
         :return:
         """
         async with async_db_session.begin() as db:
             task_scheduler = await task_scheduler_dao.get_by_name(db, obj.name)
             if task_scheduler:
-                raise errors.ConflictError(msg='任务调度已存在')
+                raise errors.ConflictError(msg='Task scheduler already exists')
             await task_scheduler_dao.create(db, obj)
 
     @staticmethod
     async def update(*, pk: int, obj: UpdateTaskSchedulerParam) -> int:
         """
-        更新任务调度
+        Update a task scheduler
 
-        :param pk: 任务调度 ID
-        :param obj: 任务调度更新参数
+        :param pk: Task scheduler ID
+        :param obj: Task scheduler update parameters
         :return:
         """
         async with async_db_session.begin() as db:
             task_scheduler = await task_scheduler_dao.get(db, pk)
             if not task_scheduler:
-                raise errors.NotFoundError(msg='任务调度不存在')
+                raise errors.NotFoundError(msg='Task scheduler does not exist')
             if task_scheduler.name != obj.name:
                 if await task_scheduler_dao.get_by_name(db, obj.name):
-                    raise errors.ConflictError(msg='任务调度已存在')
+                    raise errors.ConflictError(msg='Task scheduler already exists')
             if task_scheduler.type == TaskSchedulerType.CRONTAB:
                 crontab_verify('m', task_scheduler.crontab_minute)
                 crontab_verify('h', task_scheduler.crontab_hour)
@@ -94,15 +94,15 @@ class TaskSchedulerService:
     @staticmethod
     async def update_status(*, pk: int) -> int:
         """
-        更新任务调度状态
+        Update task scheduler status
 
-        :param pk: 任务调度 ID
+        :param pk: Task scheduler ID
         :return:
         """
         async with async_db_session.begin() as db:
             task_scheduler = await task_scheduler_dao.get(db, pk)
             if not task_scheduler:
-                raise errors.NotFoundError(msg='任务调度不存在')
+                raise errors.NotFoundError(msg='Task scheduler does not exist')
             if task_scheduler.type == TaskSchedulerType.CRONTAB:
                 crontab_verify('m', task_scheduler.crontab_minute)
                 crontab_verify('h', task_scheduler.crontab_hour)
@@ -115,33 +115,33 @@ class TaskSchedulerService:
     @staticmethod
     async def delete(*, pk) -> int:
         """
-        删除任务调度
+        Delete a task scheduler
 
-        :param pk: 用户 ID
+        :param pk: User ID
         :return:
         """
         async with async_db_session.begin() as db:
             task_scheduler = await task_scheduler_dao.get(db, pk)
             if not task_scheduler:
-                raise errors.NotFoundError(msg='任务调度不存在')
+                raise errors.NotFoundError(msg='Task scheduler does not exist')
             count = await task_scheduler_dao.delete(db, pk)
             return count
 
     @staticmethod
     async def execute(*, pk: int) -> None:
         """
-        执行任务
+        Execute a task
 
-        :param pk: 任务调度 ID
+        :param pk: Task scheduler ID
         :return:
         """
         async with async_db_session() as db:
             workers = await run_in_threadpool(celery_app.control.ping, timeout=0.5)
             if not workers:
-                raise errors.ServerError(msg='Celery Worker 暂不可用，请稍后重试')
+                raise errors.ServerError(msg='Celery Worker is temporarily unavailable, please try again later')
             task_scheduler = await task_scheduler_dao.get(db, pk)
             if not task_scheduler:
-                raise errors.NotFoundError(msg='任务调度不存在')
+                raise errors.NotFoundError(msg='Task scheduler does not exist')
             celery_app.send_task(
                 name=task_scheduler.task,
                 args=json.loads(task_scheduler.args),
@@ -151,14 +151,14 @@ class TaskSchedulerService:
     @staticmethod
     async def revoke(*, task_id: str) -> None:
         """
-        撤销指定的任务
+        Revoke a specified task
 
-        :param task_id: 任务 UUID
+        :param task_id: Task UUID
         :return:
         """
         workers = await run_in_threadpool(celery_app.control.ping, timeout=0.5)
         if not workers:
-            raise errors.ServerError(msg='Celery Worker 暂不可用，请稍后重试')
+            raise errors.ServerError(msg='Celery Worker is temporarily unavailable, please try again later')
         celery_app.control.revoke(task_id)
 
 

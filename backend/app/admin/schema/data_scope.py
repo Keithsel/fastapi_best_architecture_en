@@ -10,43 +10,43 @@ from backend.common.schema import SchemaBase
 
 
 class DataScopeBase(SchemaBase):
-    """数据范围基础模型"""
+    """Data Scope Base Model"""
 
-    name: str = Field(description='名称')
-    status: StatusType = Field(StatusType.enable, description='状态')
+    name: str = Field(description='Name')
+    status: StatusType = Field(StatusType.enable, description='Status')
 
 
 class CreateDataScopeParam(DataScopeBase):
-    """创建数据范围参数"""
+    """Create Data Scope Parameters"""
 
 
 class UpdateDataScopeParam(DataScopeBase):
-    """更新数据范围参数"""
+    """Update Data Scope Parameters"""
 
 
 class UpdateDataScopeRuleParam(SchemaBase):
-    """更新数据范围规则参数"""
+    """Update Data Scope Rule Parameters"""
 
-    rules: list[int] = Field(description='数据规则 ID 列表')
+    rules: list[int] = Field(description='Data Rule ID List')
 
 
 class DeleteDataScopeParam(SchemaBase):
-    """删除数据范围参数"""
+    """Delete Data Scope Parameters"""
 
-    pks: list[int] = Field(description='数据范围 ID 列表')
+    pks: list[int] = Field(description='Data Scope ID List')
 
 
 class GetDataScopeDetail(DataScopeBase):
-    """数据范围详情"""
+    """Data Scope Detail"""
 
     model_config = ConfigDict(from_attributes=True)
 
-    id: int = Field(description='数据范围 ID')
-    created_time: datetime = Field(description='创建时间')
-    updated_time: datetime | None = Field(None, description='更新时间')
+    id: int = Field(description='Data Scope ID')
+    created_time: datetime = Field(description='Created Time')
+    updated_time: datetime | None = Field(None, description='Updated Time')
 
 
 class GetDataScopeWithRelationDetail(GetDataScopeDetail):
-    """数据范围关联详情"""
+    """Data Scope With Relation Detail"""
 
-    rules: list[GetDataRuleDetail] = Field([], description='数据规则列表')
+    rules: list[GetDataRuleDetail] = Field([], description='Data Rule List')

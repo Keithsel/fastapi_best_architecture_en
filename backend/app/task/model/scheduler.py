@@ -23,45 +23,45 @@ from backend.utils.timezone import timezone
 
 
 class TaskScheduler(Base):
-    """任务调度表"""
+    """Task scheduling table"""
 
     __tablename__ = 'task_scheduler'
 
     id: Mapped[id_key] = mapped_column(init=False)
-    name: Mapped[str] = mapped_column(String(50), unique=True, comment='任务名称')
-    task: Mapped[str] = mapped_column(String(255), comment='要运行的 Celery 任务')
-    args: Mapped[str | None] = mapped_column(JSON(), comment='任务可接收的位置参数')
-    kwargs: Mapped[str | None] = mapped_column(JSON(), comment='任务可接收的关键字参数')
-    queue: Mapped[str | None] = mapped_column(String(255), comment='CELERY_TASK_QUEUES 中定义的队列')
-    exchange: Mapped[str | None] = mapped_column(String(255), comment='低级别 AMQP 路由的交换机')
-    routing_key: Mapped[str | None] = mapped_column(String(255), comment='低级别 AMQP 路由的路由密钥')
-    start_time: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), comment='任务开始触发的时间')
-    expire_time: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), comment='任务不再触发的截止时间')
-    expire_seconds: Mapped[int | None] = mapped_column(comment='任务不再触发的秒数时间差')
-    type: Mapped[int] = mapped_column(comment='调度类型（0间隔 1定时）')
-    interval_every: Mapped[int | None] = mapped_column(comment='任务再次运行前的间隔周期数')
-    interval_period: Mapped[str | None] = mapped_column(String(255), comment='任务运行之间的周期类型')
-    crontab_minute: Mapped[str | None] = mapped_column(String(60 * 4), default='*', comment='运行的分钟，"*" 表示全部')
-    crontab_hour: Mapped[str | None] = mapped_column(String(24 * 4), default='*', comment='运行的小时，"*" 表示全部')
-    crontab_day_of_week: Mapped[str | None] = mapped_column(String(64), default='*', comment='运行的星期，"*" 表示全部')
+    name: Mapped[str] = mapped_column(String(50), unique=True, comment='Task name')
+    task: Mapped[str] = mapped_column(String(255), comment='Celery task to run')
+    args: Mapped[str | None] = mapped_column(JSON(), comment='Positional arguments the task can accept')
+    kwargs: Mapped[str | None] = mapped_column(JSON(), comment='Keyword arguments the task can accept')
+    queue: Mapped[str | None] = mapped_column(String(255), comment='Queue defined in CELERY_TASK_QUEUES')
+    exchange: Mapped[str | None] = mapped_column(String(255), comment='Exchange for low-level AMQP routing')
+    routing_key: Mapped[str | None] = mapped_column(String(255), comment='Routing key for low-level AMQP routing')
+    start_time: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), comment='Time when the task starts to trigger')
+    expire_time: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), comment='Deadline after which the task will no longer trigger')
+    expire_seconds: Mapped[int | None] = mapped_column(comment='Time difference in seconds after which the task will no longer trigger')
+    type: Mapped[int] = mapped_column(comment='Schedule type (0 interval, 1 crontab)')
+    interval_every: Mapped[int | None] = mapped_column(comment='Interval count before the task runs again')
+    interval_period: Mapped[str | None] = mapped_column(String(255), comment='Type of period between task runs')
+    crontab_minute: Mapped[str | None] = mapped_column(String(60 * 4), default='*', comment='Minute(s) to run, "*" means all')
+    crontab_hour: Mapped[str | None] = mapped_column(String(24 * 4), default='*', comment='Hour(s) to run, "*" means all')
+    crontab_day_of_week: Mapped[str | None] = mapped_column(String(64), default='*', comment='Day(s) of week to run, "*" means all')
     crontab_day_of_month: Mapped[str | None] = mapped_column(
-        String(31 * 4), default='*', comment='运行的每月日期，"*" 表示全部'
+        String(31 * 4), default='*', comment='Day(s) of month to run, "*" means all'
     )
     crontab_month_of_year: Mapped[str | None] = mapped_column(
-        String(64), default='*', comment='运行的月份，"*" 表示全部'
+        String(64), default='*', comment='Month(s) to run, "*" means all'
     )
     one_off: Mapped[bool] = mapped_column(
-        Boolean().with_variant(INTEGER, 'postgresql'), default=False, comment='是否仅运行一次'
+        Boolean().with_variant(INTEGER, 'postgresql'), default=False, comment='Whether to run only once'
     )
     enabled: Mapped[bool] = mapped_column(
-        Boolean().with_variant(INTEGER, 'postgresql'), default=True, comment='是否启用任务'
+        Boolean().with_variant(INTEGER, 'postgresql'), default=True, comment='Whether the task is enabled'
     )
-    total_run_count: Mapped[int] = mapped_column(default=0, comment='任务触发的总次数')
+    total_run_count: Mapped[int] = mapped_column(default=0, comment='Total number of times the task has triggered')
     last_run_time: Mapped[datetime | None] = mapped_column(
-        DateTime(timezone=True), default=None, comment='任务最后触发的时间'
+        DateTime(timezone=True), default=None, comment='Last time the task was triggered'
     )
     remark: Mapped[str | None] = mapped_column(
-        LONGTEXT().with_variant(TEXT, 'postgresql'), default=None, comment='备注'
+        LONGTEXT().with_variant(TEXT, 'postgresql'), default=None, comment='Remarks'
     )
 
     no_changes: bool = False
@@ -69,7 +69,7 @@ class TaskScheduler(Base):
     @staticmethod
     def before_insert_or_update(mapper, connection, target):
         if target.expire_seconds is not None and target.expire_time:
-            raise errors.ConflictError(msg='expires 和 expire_seconds 只能设置一个')
+            raise errors.ConflictError(msg='Only one of expires and expire_seconds can be set')
 
     @classmethod
     def changed(cls, mapper, connection, target):
@@ -86,7 +86,7 @@ class TaskScheduler(Base):
         asyncio.create_task(cls.update_changed_async())
 
 
-# 事件监听器
+# Event listeners
 event.listen(TaskScheduler, 'before_insert', TaskScheduler.before_insert_or_update)
 event.listen(TaskScheduler, 'before_update', TaskScheduler.before_insert_or_update)
 event.listen(TaskScheduler, 'after_insert', TaskScheduler.update_changed)

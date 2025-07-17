@@ -5,9 +5,9 @@ import os
 import uvicorn
 
 if __name__ == '__main__':
-    # 为什么独立此启动文件：https://stackoverflow.com/questions/64003384
-    # 如果你喜欢在 IDE 中进行 DEBUG，可在 IDE 中直接右键启动此文件
-    # 如果你喜欢通过 print 方式进行调试，建议使用 fastapi cli 方式启动服务
+    # Why use a separate startup file: https://stackoverflow.com/questions/64003384
+    # If you prefer debugging in an IDE, you can directly right-click and run this file in the IDE
+    # If you prefer debugging with print statements, it is recommended to start the service using the FastAPI CLI
     try:
         uvicorn.run(
             app='backend.main:app',

@@ -19,25 +19,25 @@ from backend.database.redis import redis_client
 
 
 class DataScopeService:
-    """数据范围服务类"""
+    """Data Scope Service Class"""
 
     @staticmethod
     async def get(*, pk: int) -> DataScope:
         """
-        获取数据范围详情
+        Get data scope details
 
-        :param pk: 范围 ID
+        :param pk: Scope ID
         :return:
         """
         async with async_db_session() as db:
             data_scope = await data_scope_dao.get(db, pk)
             if not data_scope:
-                raise errors.NotFoundError(msg='数据范围不存在')
+                raise errors.NotFoundError(msg='Data scope does not exist')
             return data_scope
 
     @staticmethod
     async def get_all() -> Sequence[DataScope]:
-        """获取所有数据范围"""
+        """Get all data scopes"""
         async with async_db_session() as db:
             data_scopes = await data_scope_dao.get_all(db)
             return data_scopes
@@ -45,24 +45,24 @@ class DataScopeService:
     @staticmethod
     async def get_rules(*, pk: int) -> DataScope:
         """
-        获取数据范围规则
+        Get data scope rules
 
-        :param pk: 范围 ID
+        :param pk: Scope ID
         :return:
         """
         async with async_db_session() as db:
             data_scope = await data_scope_dao.get_with_relation(db, pk)
             if not data_scope:
-                raise errors.NotFoundError(msg='数据范围不存在')
+                raise errors.NotFoundError(msg='Data scope does not exist')
             return data_scope
 
     @staticmethod
     async def get_select(*, name: str | None, status: int | None) -> Select:
         """
-        获取数据范围列表查询条件
+        Get data scope list query conditions
 
-        :param name: 范围名称
-        :param status: 范围状态
+        :param name: Scope name
+        :param status: Scope status
         :return:
         """
         return await data_scope_dao.get_list(name, status)
@@ -70,33 +70,33 @@ class DataScopeService:
     @staticmethod
     async def create(*, obj: CreateDataScopeParam) -> None:
         """
-        创建数据范围
+        Create data scope
 
-        :param obj: 数据范围参数
+        :param obj: Data scope parameters
         :return:
         """
         async with async_db_session.begin() as db:
             data_scope = await data_scope_dao.get_by_name(db, obj.name)
             if data_scope:
-                raise errors.ConflictError(msg='数据范围已存在')
+                raise errors.ConflictError(msg='Data scope already exists')
             await data_scope_dao.create(db, obj)
 
     @staticmethod
     async def update(*, pk: int, obj: UpdateDataScopeParam) -> int:
         """
-        更新数据范围
+        Update data scope
 
-        :param pk: 范围 ID
-        :param obj: 数据范围更新参数
+        :param pk: Scope ID
+        :param obj: Data scope update parameters
         :return:
         """
         async with async_db_session.begin() as db:
             data_scope = await data_scope_dao.get(db, pk)
             if not data_scope:
-                raise errors.NotFoundError(msg='数据范围不存在')
+                raise errors.NotFoundError(msg='Data scope does not exist')
             if data_scope.name != obj.name:
                 if await data_scope_dao.get_by_name(db, obj.name):
-                    raise errors.ConflictError(msg='数据范围已存在')
+                    raise errors.ConflictError(msg='Data scope already exists')
             count = await data_scope_dao.update(db, pk, obj)
             for role in await data_scope.awaitable_attrs.roles:
                 for user in await role.awaitable_attrs.users:
@@ -106,10 +106,10 @@ class DataScopeService:
     @staticmethod
     async def update_data_scope_rule(*, pk: int, rule_ids: UpdateDataScopeRuleParam) -> int:
         """
-        更新数据范围规则
+        Update data scope rules
 
-        :param pk: 范围 ID
-        :param rule_ids: 规则 ID 列表
+        :param pk: Scope ID
+        :param rule_ids: List of rule IDs
         :return:
         """
         async with async_db_session.begin() as db:
@@ -119,9 +119,9 @@ class DataScopeService:
     @staticmethod
     async def delete(*, obj: DeleteDataScopeParam) -> int:
         """
-        批量删除数据范围
+        Batch delete data scopes
 
-        :param obj: 范围 ID 列表
+        :param obj: List of scope IDs
         :return:
         """
         async with async_db_session.begin() as db:

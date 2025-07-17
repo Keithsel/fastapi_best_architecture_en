@@ -16,43 +16,43 @@ from backend.app.admin.schema.role import (
 
 
 class CRUDRole(CRUDPlus[Role]):
-    """角色数据库操作类"""
+    """Role database operation class"""
 
     async def get(self, db: AsyncSession, role_id: int) -> Role | None:
         """
-        获取角色详情
+        Get role details
 
-        :param db: 数据库会话
-        :param role_id: 角色 ID
+        :param db: Database session
+        :param role_id: Role ID
         :return:
         """
         return await self.select_model(db, role_id)
 
     async def get_with_relation(self, db: AsyncSession, role_id: int) -> Role | None:
         """
-        获取角色及关联数据
+        Get role and related data
 
-        :param db: 数据库会话
-        :param role_id: 角色 ID
+        :param db: Database session
+        :param role_id: Role ID
         :return:
         """
         return await self.select_model(db, role_id, load_strategies=['menus', 'scopes'])
 
     async def get_all(self, db: AsyncSession) -> Sequence[Role]:
         """
-        获取所有角色
+        Get all roles
 
-        :param db: 数据库会话
+        :param db: Database session
         :return:
         """
         return await self.select_models(db)
 
     async def get_list(self, name: str | None, status: int | None) -> Select:
         """
-        获取角色列表
+        Get role list
 
-        :param name: 角色名称
-        :param status: 角色状态
+        :param name: Role name
+        :param status: Role status
         :return:
         """
 
@@ -75,42 +75,42 @@ class CRUDRole(CRUDPlus[Role]):
 
     async def get_by_name(self, db: AsyncSession, name: str) -> Role | None:
         """
-        通过名称获取角色
+        Get role by name
 
-        :param db: 数据库会话
-        :param name: 角色名称
+        :param db: Database session
+        :param name: Role name
         :return:
         """
         return await self.select_model_by_column(db, name=name)
 
     async def create(self, db: AsyncSession, obj: CreateRoleParam) -> None:
         """
-        创建角色
+        Create role
 
-        :param db: 数据库会话
-        :param obj: 创建角色参数
+        :param db: Database session
+        :param obj: Create role parameters
         :return:
         """
         await self.create_model(db, obj)
 
     async def update(self, db: AsyncSession, role_id: int, obj: UpdateRoleParam) -> int:
         """
-        更新角色
+        Update role
 
-        :param db: 数据库会话
-        :param role_id: 角色 ID
-        :param obj: 更新角色参数
+        :param db: Database session
+        :param role_id: Role ID
+        :param obj: Update role parameters
         :return:
         """
         return await self.update_model(db, role_id, obj)
 
     async def update_menus(self, db: AsyncSession, role_id: int, menu_ids: UpdateRoleMenuParam) -> int:
         """
-        更新角色菜单
+        Update role menus
 
-        :param db: 数据库会话
-        :param role_id: 角色 ID
-        :param menu_ids: 菜单 ID 列表
+        :param db: Database session
+        :param role_id: Role ID
+        :param menu_ids: List of menu IDs
         :return:
         """
         current_role = await self.get_with_relation(db, role_id)
@@ -121,11 +121,11 @@ class CRUDRole(CRUDPlus[Role]):
 
     async def update_scopes(self, db: AsyncSession, role_id: int, scope_ids: UpdateRoleScopeParam) -> int:
         """
-        更新角色数据范围
+        Update role data scopes
 
-        :param db: 数据库会话
-        :param role_id: 角色 ID
-        :param scope_ids: 权限范围 ID 列表
+        :param db: Database session
+        :param role_id: Role ID
+        :param scope_ids: List of scope IDs
         :return:
         """
         current_role = await self.get_with_relation(db, role_id)
@@ -136,10 +136,10 @@ class CRUDRole(CRUDPlus[Role]):
 
     async def delete(self, db: AsyncSession, role_ids: list[int]) -> int:
         """
-        批量删除角色
+        Batch delete roles
 
-        :param db: 数据库会话
-        :param role_ids: 角色 ID 列表
+        :param db: Database session
+        :param role_ids: List of role IDs
         :return:
         """
         return await self.delete_model_by_column(db, allow_multiple=True, id__in=role_ids)

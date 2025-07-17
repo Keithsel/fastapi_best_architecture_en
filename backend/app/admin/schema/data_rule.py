@@ -9,42 +9,42 @@ from backend.common.schema import SchemaBase
 
 
 class DataRuleSchemaBase(SchemaBase):
-    """数据规则基础模型"""
+    """Data Rule Base Model"""
 
-    name: str = Field(description='规则名称')
-    model: str = Field(description='模型名称')
-    column: str = Field(description='字段名称')
-    operator: RoleDataRuleOperatorType = Field(RoleDataRuleOperatorType.AND, description='操作符（AND/OR）')
-    expression: RoleDataRuleExpressionType = Field(RoleDataRuleExpressionType.eq, description='表达式类型')
-    value: str = Field(description='规则值')
+    name: str = Field(description='Rule Name')
+    model: str = Field(description='Model Name')
+    column: str = Field(description='Column Name')
+    operator: RoleDataRuleOperatorType = Field(RoleDataRuleOperatorType.AND, description='Operator (AND/OR)')
+    expression: RoleDataRuleExpressionType = Field(RoleDataRuleExpressionType.eq, description='Expression Type')
+    value: str = Field(description='Rule Value')
 
 
 class CreateDataRuleParam(DataRuleSchemaBase):
-    """创建数据规则参数"""
+    """Create Data Rule Parameters"""
 
 
 class UpdateDataRuleParam(DataRuleSchemaBase):
-    """更新数据规则参数"""
+    """Update Data Rule Parameters"""
 
 
 class DeleteDataRuleParam(SchemaBase):
-    """删除数据规则参数"""
+    """Delete Data Rule Parameters"""
 
-    pks: list[int] = Field(description='规则 ID 列表')
+    pks: list[int] = Field(description='Rule ID List')
 
 
 class GetDataRuleDetail(DataRuleSchemaBase):
-    """数据规则详情"""
+    """Data Rule Detail"""
 
     model_config = ConfigDict(from_attributes=True)
 
-    id: int = Field(description='规则 ID')
-    created_time: datetime = Field(description='创建时间')
-    updated_time: datetime | None = Field(None, description='更新时间')
+    id: int = Field(description='Rule ID')
+    created_time: datetime = Field(description='Created Time')
+    updated_time: datetime | None = Field(None, description='Updated Time')
 
 
 class GetDataRuleColumnDetail(SchemaBase):
-    """数据规则可用模型字段详情"""
+    """Available Model Field Detail for Data Rule"""
 
-    key: str = Field(description='字段名')
-    comment: str = Field(description='字段评论')
+    key: str = Field(description='Field Name')
+    comment: str = Field(description='Field Comment')

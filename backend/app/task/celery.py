@@ -21,7 +21,7 @@ def find_task_packages():
 
 
 def init_celery() -> celery.Celery:
-    """初始化 Celery 应用"""
+    """Initialize Celery application"""
 
     # TODO: Update this work if celery version >= 6.0.0
     # https://github.com/fastapi-practices/fastapi_best_architecture/issues/321
@@ -43,7 +43,7 @@ def init_celery() -> celery.Celery:
             'group': OVERWRITE_CELERY_RESULT_GROUP_TABLE_NAME,
         },
         result_extended=True,
-        # result_expires=0,  # 任务结果自动清理，0 或 None 表示不清理
+        # result_expires=0,  # Task result auto-cleanup, 0 or None means no cleanup
         beat_schedule=LOCAL_BEAT_SCHEDULE,
         beat_scheduler='app.task.utils.schedulers:DatabaseScheduler',
         task_cls='app.task.tasks.base:TaskBase',
@@ -52,11 +52,11 @@ def init_celery() -> celery.Celery:
         timezone=settings.DATETIME_TIMEZONE,
     )
 
-    # 自动发现任务
+    # Automatically discover tasks
     app.autodiscover_tasks(find_task_packages())
 
     return app
 
 
-# 创建 Celery 实例
+# Create Celery instance
 celery_app: celery.Celery = init_celery()

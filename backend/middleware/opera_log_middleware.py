@@ -21,14 +21,14 @@ from backend.utils.trace_id import get_request_trace_id
 
 
 class OperaLogMiddleware(BaseHTTPMiddleware):
-    """操作日志中间件"""
+    """Operation log middleware"""
 
     async def dispatch(self, request: Request, call_next: Any) -> Response:
         """
-        处理请求并记录操作日志
+        Handle request and record operation log
 
-        :param request: FastAPI 请求对象
-        :param call_next: 下一个中间件或路由处理函数
+        :param request: FastAPI request object
+        :param call_next: Next middleware or route handler function
         :return:
         """
         response = None
@@ -41,7 +41,7 @@ class OperaLogMiddleware(BaseHTTPMiddleware):
             args = await self.get_request_args(request)
             args = await self.desensitization(args)
 
-            # 执行请求
+            # Execute request
             elapsed = 0.0
             code = 200
             msg = 'Success'
@@ -62,31 +62,31 @@ class OperaLogMiddleware(BaseHTTPMiddleware):
                     if exception:
                         code = exception.get('code')
                         msg = exception.get('msg')
-                        log.error(f'请求异常: {msg}')
+                        log.error(f'Request exception: {msg}')
                         break
             except Exception as e:
-                log.error(f'请求异常: {str(e)}')
-                code = getattr(e, 'code', code)  # 兼容 SQLAlchemy 异常用法
+                log.error(f'Request exception: {str(e)}')
+                code = getattr(e, 'code', code)  # Compatible with SQLAlchemy exception usage
                 msg = getattr(e, 'msg', msg)
                 status = StatusType.disable
                 error = e
 
-            # 此信息只能在请求后获取
+            # This information can only be obtained after the request
             _route = request.scope.get('route')
             summary = getattr(_route, 'summary', '')
 
             try:
-                # 此信息来源于 JWT 认证中间件
+                # This information comes from JWT authentication middleware
                 username = request.user.username
             except AttributeError:
                 username = None
 
-            # 日志记录
-            log.debug(f'接口摘要：[{summary}]')
-            log.debug(f'请求地址：[{request.state.ip}]')
-            log.debug(f'请求参数：{args}')
+            # Log record
+            log.debug(f'API summary: [{summary}]')
+            log.debug(f'Request address: [{request.state.ip}]')
+            log.debug(f'Request parameters: {args}')
 
-            # 日志创建
+            # Log creation
             opera_log_in = CreateOperaLogParam(
                 trace_id=get_request_trace_id(request),
                 username=username,
@@ -105,12 +105,12 @@ class OperaLogMiddleware(BaseHTTPMiddleware):
                 status=status,
                 code=str(code),
                 msg=msg,
-                cost_time=elapsed,  # 可能和日志存在微小差异（可忽略）
+                cost_time=elapsed,  # May have slight difference with log (can be ignored)
                 opera_time=request.state.start_time,
             )
             create_task(opera_log_service.create(obj=opera_log_in))  # noqa: ignore
 
-            # 错误抛出
+            # Error throw
             if error:
                 raise error from None
 
@@ -119,9 +119,9 @@ class OperaLogMiddleware(BaseHTTPMiddleware):
     @staticmethod
     async def get_request_args(request: Request) -> dict[str, Any]:
         """
-        获取请求参数
+        Get request parameters
 
-        :param request: FastAPI 请求对象
+        :param request: FastAPI request object
         :return:
         """
         args = {}
@@ -131,12 +131,12 @@ class OperaLogMiddleware(BaseHTTPMiddleware):
         path_params = request.path_params
         if path_params:
             args['path_params'] = path_params
-        # Tip: .body() 必须在 .form() 之前获取
+        # Tip: .body() must be obtained before .form()
         # https://github.com/encode/starlette/discussions/1933
         content_type = request.headers.get('Content-Type', '').split(';')
         body_data = await request.body()
         if body_data:
-            # 注意：非 json 数据默认使用 body 作为键
+            # Note: Non-json data uses 'data' as the key by default
             if 'application/json' not in content_type:
                 args['data'] = str(body_data)
             else:
@@ -163,9 +163,9 @@ class OperaLogMiddleware(BaseHTTPMiddleware):
     @sync_to_async
     def desensitization(args: dict[str, Any]) -> dict[str, Any] | None:
         """
-        脱敏处理
+        Desensitization processing
 
-        :param args: 需要脱敏的参数字典
+        :param args: Parameter dictionary to be desensitized
         :return:
         """
         if not args:

@@ -16,15 +16,15 @@ from backend.database.db import CurrentSession
 router = APIRouter()
 
 
-@router.get('/all', summary='获取所有任务调度', dependencies=[DependsJwtAuth])
+@router.get('/all', summary='Get all task schedulers', dependencies=[DependsJwtAuth])
 async def get_all_task_schedulers() -> ResponseSchemaModel[list[GetTaskSchedulerDetail]]:
     schedulers = await task_scheduler_service.get_all()
     return response_base.success(data=schedulers)
 
 
-@router.get('/{pk}', summary='获取任务调度详情', dependencies=[DependsJwtAuth])
+@router.get('/{pk}', summary='Get task scheduler details', dependencies=[DependsJwtAuth])
 async def get_task_scheduler(
-    pk: Annotated[int, Path(description='任务调度 ID')],
+    pk: Annotated[int, Path(description='Task Scheduler ID')],
 ) -> ResponseSchemaModel[GetTaskSchedulerDetail]:
     task_scheduler = await task_scheduler_service.get(pk=pk)
     return response_base.success(data=task_scheduler)
@@ -32,7 +32,7 @@ async def get_task_scheduler(
 
 @router.get(
     '',
-    summary='分页获取所有任务调度',
+    summary='Get all task schedulers with pagination',
     dependencies=[
         DependsJwtAuth,
         DependsPagination,
@@ -40,8 +40,8 @@ async def get_task_scheduler(
 )
 async def get_task_scheduler_paged(
     db: CurrentSession,
-    name: Annotated[int, Path(description='任务调度名称')] = None,
-    type: Annotated[int | None, Query(description='任务调度类型')] = None,
+    name: Annotated[int, Path(description='Task Scheduler Name')] = None,
+    type: Annotated[int | None, Query(description='Task Scheduler Type')] = None,
 ) -> ResponseSchemaModel[PageData[GetTaskSchedulerDetail]]:
     task_scheduler_select = await task_scheduler_service.get_select(name=name, type=type)
     page_data = await paging_data(db, task_scheduler_select)
@@ -50,7 +50,7 @@ async def get_task_scheduler_paged(
 
 @router.post(
     '',
-    summary='创建任务调度',
+    summary='Create task scheduler',
     dependencies=[
         Depends(RequestPermission('sys:task:add')),
         DependsRBAC,
@@ -63,14 +63,14 @@ async def create_task_scheduler(obj: CreateTaskSchedulerParam) -> ResponseModel:
 
 @router.put(
     '/{pk}',
-    summary='更新任务调度',
+    summary='Update task scheduler',
     dependencies=[
         Depends(RequestPermission('sys:task:edit')),
         DependsRBAC,
     ],
 )
 async def update_task_scheduler(
-    pk: Annotated[int, Path(description='任务调度 ID')], obj: UpdateTaskSchedulerParam
+    pk: Annotated[int, Path(description='Task Scheduler ID')], obj: UpdateTaskSchedulerParam
 ) -> ResponseModel:
     count = await task_scheduler_service.update(pk=pk, obj=obj)
     if count > 0:
@@ -80,13 +80,13 @@ async def update_task_scheduler(
 
 @router.put(
     '/{pk}/status',
-    summary='更新任务调度状态',
+    summary='Update task scheduler status',
     dependencies=[
         Depends(RequestPermission('sys:task:edit')),
         DependsRBAC,
     ],
 )
-async def update_task_scheduler_status(pk: Annotated[int, Path(description='任务调度 ID')]) -> ResponseModel:
+async def update_task_scheduler_status(pk: Annotated[int, Path(description='Task Scheduler ID')]) -> ResponseModel:
     count = await task_scheduler_service.update_status(pk=pk)
     if count > 0:
         return response_base.success()
@@ -95,13 +95,13 @@ async def update_task_scheduler_status(pk: Annotated[int, Path(description='任�
 
 @router.delete(
     '/{pk}',
-    summary='删除任务调度',
+    summary='Delete task scheduler',
     dependencies=[
         Depends(RequestPermission('sys:task:del')),
         DependsRBAC,
     ],
 )
-async def delete_task_scheduler(pk: Annotated[int, Path(description='任务调度 ID')]) -> ResponseModel:
+async def delete_task_scheduler(pk: Annotated[int, Path(description='Task Scheduler ID')]) -> ResponseModel:
     count = await task_scheduler_service.delete(pk=pk)
     if count > 0:
         return response_base.success()
@@ -110,25 +110,25 @@ async def delete_task_scheduler(pk: Annotated[int, Path(description='任务调�
 
 @router.post(
     '/{pk}/executions',
-    summary='手动执行任务',
+    summary='Manually execute task',
     dependencies=[
         Depends(RequestPermission('sys:task:exec')),
         DependsRBAC,
     ],
 )
-async def execute_task(pk: Annotated[int, Path(description='任务调度 ID')]) -> ResponseModel:
+async def execute_task(pk: Annotated[int, Path(description='Task Scheduler ID')]) -> ResponseModel:
     await task_scheduler_service.execute(pk=pk)
     return response_base.success()
 
 
 @router.delete(
     '/{task_id}/cancel',
-    summary='撤销任务',
+    summary='Revoke task',
     dependencies=[
         Depends(RequestPermission('sys:task:revoke')),
         DependsRBAC,
     ],
 )
-async def revoke_task(task_id: Annotated[str, Path(description='任务 UUID')]) -> ResponseModel:
+async def revoke_task(task_id: Annotated[str, Path(description='Task UUID')]) -> ResponseModel:
     await task_scheduler_service.revoke(task_id=task_id)
     return response_base.success()
