@@ -2,7 +2,9 @@
 # -*- coding: utf-8 -*-
 import sys
 
-from pathlib import Path
+from backend.core.path_conf import BASE_PATH
+
+from .actions import *  # noqa: F403
 
 # Import the project root directory
-sys.path.append(str(Path(__file__).resolve().parent.parent.parent.parent))
+sys.path.append(str(BASE_PATH.parent))

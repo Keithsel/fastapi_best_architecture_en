@@ -15,7 +15,7 @@ def find_task_packages():
     packages = []
     for root, dirs, files in os.walk(os.path.join(BASE_PATH, 'app', 'task', 'tasks')):
         if 'tasks.py' in files:
-            package = root.replace(str(BASE_PATH) + os.path.sep, '').replace(os.path.sep, '.')
+            package = root.replace(str(BASE_PATH.parent) + os.path.sep, '').replace(os.path.sep, '.')
             packages.append(package)
     return packages
 
@@ -35,7 +35,7 @@ def init_celery() -> celery.Celery:
         if settings.CELERY_BROKER == 'redis'
         else f'amqp://{settings.CELERY_RABBITMQ_USERNAME}:{settings.CELERY_RABBITMQ_PASSWORD}@{settings.CELERY_RABBITMQ_HOST}:{settings.CELERY_RABBITMQ_PORT}',
         broker_connection_retry_on_startup=True,
-        backend=f'db+{settings.DATABASE_TYPE + "+pymysql" if settings.DATABASE_TYPE == "mysql" else settings.DATABASE_TYPE}'  # noqa: E501
+        backend=f'db+{settings.DATABASE_TYPE}+{"pymysql" if settings.DATABASE_TYPE == "mysql" else "psycopg"}'
         f'://{settings.DATABASE_USER}:{settings.DATABASE_PASSWORD}@{settings.DATABASE_HOST}:{settings.DATABASE_PORT}/{settings.DATABASE_SCHEMA}',
         database_engine_options={'echo': settings.DATABASE_ECHO},
         database_table_names={
@@ -45,8 +45,8 @@ def init_celery() -> celery.Celery:
         result_extended=True,
         # result_expires=0,  # Task result auto-cleanup, 0 or None means no cleanup
         beat_schedule=LOCAL_BEAT_SCHEDULE,
-        beat_scheduler='app.task.utils.schedulers:DatabaseScheduler',
-        task_cls='app.task.tasks.base:TaskBase',
+        beat_scheduler='backend.app.task.utils.schedulers:DatabaseScheduler',
+        task_cls='backend.app.task.tasks.base:TaskBase',
         task_track_started=True,
         enable_utc=False,
         timezone=settings.DATETIME_TIMEZONE,

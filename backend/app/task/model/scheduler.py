@@ -30,26 +30,18 @@ class TaskScheduler(Base):
     id: Mapped[id_key] = mapped_column(init=False)
     name: Mapped[str] = mapped_column(String(50), unique=True, comment='Task name')
     task: Mapped[str] = mapped_column(String(255), comment='Celery task to run')
-    args: Mapped[str | None] = mapped_column(JSON(), comment='Positional arguments the task can accept')
-    kwargs: Mapped[str | None] = mapped_column(JSON(), comment='Keyword arguments the task can accept')
+    args: Mapped[str | None] = mapped_column(JSON(), comment='Positional arguments for the task')
+    kwargs: Mapped[str | None] = mapped_column(JSON(), comment='Keyword arguments for the task')
     queue: Mapped[str | None] = mapped_column(String(255), comment='Queue defined in CELERY_TASK_QUEUES')
-    exchange: Mapped[str | None] = mapped_column(String(255), comment='Exchange for low-level AMQP routing')
-    routing_key: Mapped[str | None] = mapped_column(String(255), comment='Routing key for low-level AMQP routing')
-    start_time: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), comment='Time when the task starts to trigger')
-    expire_time: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), comment='Deadline after which the task will no longer trigger')
-    expire_seconds: Mapped[int | None] = mapped_column(comment='Time difference in seconds after which the task will no longer trigger')
+    exchange: Mapped[str | None] = mapped_column(String(255), comment='Low-level AMQP routing exchange')
+    routing_key: Mapped[str | None] = mapped_column(String(255), comment='Low-level AMQP routing key')
+    start_time: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), comment='Time when the task starts')
+    expire_time: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), comment='Deadline after which the task will not be triggered')
+    expire_seconds: Mapped[int | None] = mapped_column(comment='Time difference in seconds after which the task will not be triggered')
     type: Mapped[int] = mapped_column(comment='Schedule type (0 interval, 1 crontab)')
-    interval_every: Mapped[int | None] = mapped_column(comment='Interval count before the task runs again')
-    interval_period: Mapped[str | None] = mapped_column(String(255), comment='Type of period between task runs')
-    crontab_minute: Mapped[str | None] = mapped_column(String(60 * 4), default='*', comment='Minute(s) to run, "*" means all')
-    crontab_hour: Mapped[str | None] = mapped_column(String(24 * 4), default='*', comment='Hour(s) to run, "*" means all')
-    crontab_day_of_week: Mapped[str | None] = mapped_column(String(64), default='*', comment='Day(s) of week to run, "*" means all')
-    crontab_day_of_month: Mapped[str | None] = mapped_column(
-        String(31 * 4), default='*', comment='Day(s) of month to run, "*" means all'
-    )
-    crontab_month_of_year: Mapped[str | None] = mapped_column(
-        String(64), default='*', comment='Month(s) to run, "*" means all'
-    )
+    interval_every: Mapped[int | None] = mapped_column(comment='Interval period before the task runs again')
+    interval_period: Mapped[str | None] = mapped_column(String(255), comment='Type of interval between task runs')
+    crontab: Mapped[str | None] = mapped_column(String(50), default='* * * * *', comment='Crontab schedule for the task')
     one_off: Mapped[bool] = mapped_column(
         Boolean().with_variant(INTEGER, 'postgresql'), default=False, comment='Whether to run only once'
     )
@@ -69,7 +61,7 @@ class TaskScheduler(Base):
     @staticmethod
     def before_insert_or_update(mapper, connection, target):
         if target.expire_seconds is not None and target.expire_time:
-            raise errors.ConflictError(msg='Only one of expires and expire_seconds can be set')
+            raise errors.ConflictError(msg='Only one of expire_time and expire_seconds can be set')
 
     @classmethod
     def changed(cls, mapper, connection, target):

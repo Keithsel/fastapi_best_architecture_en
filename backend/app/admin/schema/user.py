@@ -74,10 +74,10 @@ class GetUserInfoDetail(UserInfoSchemaBase):
     uuid: str = Field(description='User UUID')
     email: CustomEmailStr | None = Field(None, description='Email')
     phone: CustomPhoneNumber | None = Field(None, description='Phone number')
-    status: StatusType = Field(StatusType.enable, description='Status')
+    status: StatusType = Field(description='Status')
     is_superuser: bool = Field(description='Is superuser')
     is_staff: bool = Field(description='Is admin')
-    is_multi_login: bool = Field(description='Allow multi-login')
+    is_multi_login: bool = Field(description='Allow multi-terminal login')
     join_time: datetime = Field(description='Join time')
     last_login_time: datetime | None = Field(None, description='Last login time')
 

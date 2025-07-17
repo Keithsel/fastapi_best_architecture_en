@@ -6,14 +6,14 @@ from backend.app.task.celery import celery_app
 
 
 @celery_app.task
-async def delete_db_opera_log() -> int:
+async def delete_db_opera_log() -> str:
     """Automatically delete database operation logs"""
-    result = await opera_log_service.delete_all()
-    return result
+    await opera_log_service.delete_all()
+    return 'Success'
 
 
 @celery_app.task
-async def delete_db_login_log() -> int:
+async def delete_db_login_log() -> str:
     """Automatically delete database login logs"""
-    result = await login_log_service.delete_all()
-    return result
+    await login_log_service.delete_all()
+    return 'Success'

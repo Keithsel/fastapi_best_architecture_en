@@ -17,7 +17,7 @@ class DeptSchemaBase(SchemaBase):
     leader: str | None = Field(None, description='Leader')
     phone: CustomPhoneNumber | None = Field(None, description='Contact Phone')
     email: CustomEmailStr | None = Field(None, description='Email')
-    status: StatusType = Field(StatusType.enable, description='Status')
+    status: StatusType = Field(description='Status')
 
 
 class CreateDeptParam(DeptSchemaBase):

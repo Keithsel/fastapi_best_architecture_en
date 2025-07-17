@@ -9,17 +9,8 @@ from backend.database.redis import redis_client
 
 # Create Socket.IO server instance
 sio = socketio.AsyncServer(
-    # Integrate Celery for message subscription
     client_manager=socketio.AsyncRedisManager(
-        f'redis://:{settings.REDIS_PASSWORD}@{settings.REDIS_HOST}:'
-        f'{settings.REDIS_PORT}/{settings.CELERY_BROKER_REDIS_DATABASE}'
-    )
-    if settings.CELERY_BROKER == 'redis'
-    else socketio.AsyncAioPikaManager(
-        (
-            f'amqp://{settings.CELERY_RABBITMQ_USERNAME}:{settings.CELERY_RABBITMQ_PASSWORD}@'
-            f'{settings.CELERY_RABBITMQ_HOST}:{settings.CELERY_RABBITMQ_PORT}'
-        )
+        f'redis://:{settings.REDIS_PASSWORD}@{settings.REDIS_HOST}:{settings.REDIS_PORT}/{settings.REDIS_DATABASE}'
     ),
     async_mode='asgi',
     cors_allowed_origins=settings.CORS_ALLOWED_ORIGINS,
@@ -30,7 +21,7 @@ sio = socketio.AsyncServer(
 
 @sio.event
 async def connect(sid, environ, auth):
-    """Handle WebSocket connection event"""
+    """Socket connection event"""
     if not auth:
         log.error('WebSocket connection failed: No authorization')
         return False
@@ -57,6 +48,6 @@ async def connect(sid, environ, auth):
 
 
 @sio.event
-async def disconnect(sid: str) -> None:
-    """Handle WebSocket disconnect event"""
+async def disconnect(sid) -> None:
+    """Socket disconnect event"""
     await redis_client.spop(settings.TOKEN_ONLINE_REDIS_PREFIX)

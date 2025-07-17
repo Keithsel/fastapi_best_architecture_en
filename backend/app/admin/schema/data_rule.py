@@ -14,8 +14,8 @@ class DataRuleSchemaBase(SchemaBase):
     name: str = Field(description='Rule Name')
     model: str = Field(description='Model Name')
     column: str = Field(description='Column Name')
-    operator: RoleDataRuleOperatorType = Field(RoleDataRuleOperatorType.AND, description='Operator (AND/OR)')
-    expression: RoleDataRuleExpressionType = Field(RoleDataRuleExpressionType.eq, description='Expression Type')
+    operator: RoleDataRuleOperatorType = Field(description='Operator (AND/OR)')
+    expression: RoleDataRuleExpressionType = Field(description='Expression Type')
     value: str = Field(description='Rule Value')
 
 

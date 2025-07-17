@@ -26,7 +26,7 @@ class OperaLogSchemaBase(SchemaBase):
     browser: str | None = Field(None, description='Browser')
     device: str | None = Field(None, description='Device')
     args: dict[str, Any] | None = Field(None, description='Request Parameters')
-    status: StatusType = Field(StatusType.enable, description='Status')
+    status: StatusType = Field(description='Status')
     code: str = Field(description='Status Code')
     msg: str | None = Field(None, description='Message')
     cost_time: float = Field(description='Elapsed Time')

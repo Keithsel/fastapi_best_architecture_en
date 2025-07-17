@@ -64,6 +64,15 @@ class TaskSchedulerService:
             task_scheduler = await task_scheduler_dao.get_by_name(db, obj.name)
             if task_scheduler:
                 raise errors.ConflictError(msg='Task scheduler already exists')
+            if obj.type == TaskSchedulerType.CRONTAB:
+                crontab_split = obj.crontab.split(' ')
+                if len(crontab_split) != 5:
+                    raise errors.RequestError(msg='Invalid crontab expression')
+                crontab_verify('m', crontab_split[0])
+                crontab_verify('h', crontab_split[1])
+                crontab_verify('dow', crontab_split[2])
+                crontab_verify('dom', crontab_split[3])
+                crontab_verify('moy', crontab_split[4])
             await task_scheduler_dao.create(db, obj)
 
     @staticmethod
@@ -83,11 +92,14 @@ class TaskSchedulerService:
                 if await task_scheduler_dao.get_by_name(db, obj.name):
                     raise errors.ConflictError(msg='Task scheduler already exists')
             if task_scheduler.type == TaskSchedulerType.CRONTAB:
-                crontab_verify('m', task_scheduler.crontab_minute)
-                crontab_verify('h', task_scheduler.crontab_hour)
-                crontab_verify('dow', task_scheduler.crontab_day_of_week)
-                crontab_verify('dom', task_scheduler.crontab_day_of_month)
-                crontab_verify('moy', task_scheduler.crontab_month_of_year)
+                crontab_split = obj.crontab.split(' ')
+                if len(crontab_split) != 5:
+                    raise errors.RequestError(msg='Invalid crontab expression')
+                crontab_verify('m', crontab_split[0])
+                crontab_verify('h', crontab_split[1])
+                crontab_verify('dow', crontab_split[2])
+                crontab_verify('dom', crontab_split[3])
+                crontab_verify('moy', crontab_split[4])
             count = await task_scheduler_dao.update(db, pk, obj)
             return count
 
@@ -103,12 +115,6 @@ class TaskSchedulerService:
             task_scheduler = await task_scheduler_dao.get(db, pk)
             if not task_scheduler:
                 raise errors.NotFoundError(msg='Task scheduler does not exist')
-            if task_scheduler.type == TaskSchedulerType.CRONTAB:
-                crontab_verify('m', task_scheduler.crontab_minute)
-                crontab_verify('h', task_scheduler.crontab_hour)
-                crontab_verify('dow', task_scheduler.crontab_day_of_week)
-                crontab_verify('dom', task_scheduler.crontab_day_of_month)
-                crontab_verify('moy', task_scheduler.crontab_month_of_year)
             count = await task_scheduler_dao.set_status(db, pk, not task_scheduler.enabled)
             return count
 
@@ -117,7 +123,7 @@ class TaskSchedulerService:
         """
         Delete a task scheduler
 
-        :param pk: User ID
+        :param pk: Task scheduler ID
         :return:
         """
         async with async_db_session.begin() as db:
@@ -142,11 +148,13 @@ class TaskSchedulerService:
             task_scheduler = await task_scheduler_dao.get(db, pk)
             if not task_scheduler:
                 raise errors.NotFoundError(msg='Task scheduler does not exist')
-            celery_app.send_task(
-                name=task_scheduler.task,
-                args=json.loads(task_scheduler.args),
-                kwargs=json.loads(task_scheduler.kwargs),
-            )
+            try:
+                args = json.loads(task_scheduler.args) if task_scheduler.args else None
+                kwargs = json.loads(task_scheduler.kwargs) if task_scheduler.kwargs else None
+            except (TypeError, json.JSONDecodeError):
+                raise errors.RequestError(msg='Execution failed, invalid task parameters')
+            else:
+                celery_app.send_task(name=task_scheduler.task, args=args, kwargs=kwargs)
 
     @staticmethod
     async def revoke(*, task_id: str) -> None:

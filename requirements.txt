@@ -3,7 +3,7 @@
 -e .
 aiofiles==24.1.0
     # via fastapi-best-architecture
-alembic==1.16.3
+alembic==1.16.4
     # via fastapi-best-architecture
 amqp==5.3.1
     # via kombu
@@ -41,7 +41,7 @@ celery==5.5.3
     #   flower
 celery-aio-pool==0.1.0rc8
     # via fastapi-best-architecture
-certifi==2025.7.9
+certifi==2025.7.14
     # via
     #   httpcore
     #   httpx
@@ -91,7 +91,7 @@ exceptiongroup==1.3.0 ; python_full_version < '3.11'
     #   pytest
 fast-captcha==0.3.2
     # via fastapi-best-architecture
-fastapi==0.116.0
+fastapi==0.116.1
     # via
     #   fastapi-best-architecture
     #   fastapi-limiter
@@ -108,7 +108,7 @@ flower==2.0.1
     # via fastapi-best-architecture
 gevent==25.5.1
     # via fastapi-best-architecture
-granian==2.4.1
+granian==2.4.2
     # via fastapi-best-architecture
 greenlet==3.2.3
     # via
@@ -184,6 +184,8 @@ prometheus-client==0.22.1
 prompt-toolkit==3.0.51
     # via click-repl
 psutil==7.0.0
+    # via fastapi-best-architecture
+psycopg==3.2.9
     # via fastapi-best-architecture
 pwdlib==0.2.1
     # via fastapi-best-architecture
@@ -271,7 +273,7 @@ sqlalchemy-crud-plus==1.10.0
     # via fastapi-best-architecture
 sqlparse==0.5.3
     # via fastapi-best-architecture
-starlette==0.46.2
+starlette==0.47.1
     # via
     #   asgi-correlation-id
     #   fastapi
@@ -296,11 +298,13 @@ typing-extensions==4.14.1
     #   exceptiongroup
     #   fastapi
     #   fastapi-pagination
+    #   psycopg
     #   pydantic
     #   pydantic-core
     #   rich
     #   rich-toolkit
     #   sqlalchemy
+    #   starlette
     #   type-lens
     #   typer
     #   typing-inspection
@@ -310,7 +314,9 @@ typing-inspection==0.4.1
     #   pydantic
     #   pydantic-settings
 tzdata==2025.2
-    # via kombu
+    # via
+    #   kombu
+    #   psycopg
 ua-parser==1.0.1
     # via user-agents
 ua-parser-builtins==0.18.0.post1

@@ -17,13 +17,13 @@ class MenuSchemaBase(SchemaBase):
     parent_id: int | None = Field(None, description='Parent Menu ID')
     sort: int = Field(0, ge=0, description='Sort Order')
     icon: str | None = Field(None, description='Icon')
-    type: MenuType = Field(MenuType.directory, description='Menu Type (0 Directory 1 Menu 2 Button 3 Embedded 4 External Link)')
+    type: MenuType = Field(description='Menu Type (0 Directory, 1 Menu, 2 Button, 3 Embedded, 4 External Link)')
     component: str | None = Field(None, description='Component Path')
     perms: str | None = Field(None, description='Permission Identifier')
-    status: StatusType = Field(StatusType.enable, description='Status')
-    display: StatusType = Field(StatusType.enable, description='Display')
-    cache: StatusType = Field(StatusType.enable, description='Cache')
-    link: str | None = Field(None, description='External Link')
+    status: StatusType = Field(description='Status')
+    display: StatusType = Field(description='Display')
+    cache: StatusType = Field(description='Cache')
+    link: str | None = Field(None, description='External Link Address')
     remark: str | None = Field(None, description='Remark')
 
 

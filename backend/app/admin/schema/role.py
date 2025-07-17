@@ -14,7 +14,7 @@ class RoleSchemaBase(SchemaBase):
     """Role Base Model"""
 
     name: str = Field(description='Role Name')
-    status: StatusType = Field(StatusType.enable, description='Status')
+    status: StatusType = Field(description='Status')
     is_filter_scopes: bool = Field(True, description='Filter Data Permissions')
     remark: str | None = Field(None, description='Remark')
 
