@@ -1,3 +1,3 @@
-## 参数配置
+## Parameter Configuration
 
-内置插件，可直接使用
+Built-in plugin, ready to use

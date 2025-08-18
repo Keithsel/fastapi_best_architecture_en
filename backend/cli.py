@@ -24,7 +24,7 @@ from backend.utils.file_ops import install_git_plugin, install_zip_plugin, parse
 
 
 class CustomReloadFilter(PythonFilter):
-    """自定义重载过滤器"""
+    """Custom reload filter"""
 
     def __init__(self):
         super().__init__(extra_extensions=['.json', '.yaml', '.yml'])
@@ -125,7 +125,7 @@ async def execute_sql_scripts(sql_scripts: str) -> None:
     console.print(Text('SQL script executed successfully', style='bold green'))
 
 
-@cappa.command(help='Run the service')
+@cappa.command(help='Run API service')
 @dataclass
 class Run:
     host: Annotated[
@@ -133,13 +133,13 @@ class Run:
         cappa.Arg(
             long=True,
             default='127.0.0.1',
-            help='Host IP address to provide the service. For local development, use `127.0.0.1`.'
-            'To enable public access, such as on a LAN, use `0.0.0.0`',
+            help='Host IP address for the service. For local development, use `127.0.0.1`.'
+            'To enable public access, e.g. in a LAN, use `0.0.0.0`',
         ),
     ]
     port: Annotated[
         int,
-        cappa.Arg(long=True, default=8000, help='Port number to provide the service'),
+        cappa.Arg(long=True, default=8000, help='Host port for the service'),
     ]
     no_reload: Annotated[
         bool,
@@ -154,107 +154,66 @@ class Run:
         run(host=self.host, port=self.port, reload=self.no_reload, workers=self.workers)
 
 
-@cappa.command(help='从当前主机启动 Celery worker 服务')
+@cappa.command(help='Start Celery worker service from current host')
 @dataclass
 class Worker:
     log_level: Annotated[
         Literal['info', 'debug'],
-        cappa.Arg(long=True, short='-l', default='info', help='日志输出级别'),
+        cappa.Arg(long=True, short='-l', default='info', help='Log output level'),
     ]
 
     def __call__(self):
         run_celery_worker(log_level=self.log_level)
 
 
-@cappa.command(help='从当前主机启动 Celery beat 服务')
+@cappa.command(help='Start Celery beat service from current host')
 @dataclass
 class Beat:
     log_level: Annotated[
         Literal['info', 'debug'],
-        cappa.Arg(long=True, short='-l', default='info', help='日志输出级别'),
+        cappa.Arg(long=True, short='-l', default='info', help='Log output level'),
     ]
 
     def __call__(self):
         run_celery_beat(log_level=self.log_level)
 
 
-@cappa.command(help='从当前主机启动 Celery flower 服务')
+@cappa.command(help='Start Celery flower service from current host')
 @dataclass
 class Flower:
-    port: Annotated[int, cappa.Arg(long=True, default=8555, help='提供服务的主机端口号')]
-    basic_auth: Annotated[str, cappa.Arg(long=True, default='admin:123456', help='页面登录的用户名和密码')]
+    port: Annotated[int, cappa.Arg(long=True, default=8555, help='Host port for the service')]
+    basic_auth: Annotated[
+        str, cappa.Arg(long=True, default='admin:123456', help='Username and password for page login')
+    ]
 
     def __call__(self):
         run_celery_flower(port=self.port, basic_auth=self.basic_auth)
 
 
-@cappa.command(help='运行 Celery 服务')
+@cappa.command(help='Run Celery service')
 @dataclass
 class Celery:
     subcmd: cappa.Subcommands[Worker | Beat | Flower]
 
 
-@cappa.command(help='从当前主机启动 Celery worker 服务')
-@dataclass
-class Worker:
-    log_level: Annotated[
-        Literal['info', 'debug'],
-        cappa.Arg(long=True, short='-l', default='info', help='日志输出级别'),
-    ]
-
-    def __call__(self):
-        run_celery_worker(log_level=self.log_level)
-
-
-@cappa.command(help='从当前主机启动 Celery beat 服务')
-@dataclass
-class Beat:
-    log_level: Annotated[
-        Literal['info', 'debug'],
-        cappa.Arg(long=True, short='-l', default='info', help='日志输出级别'),
-    ]
-
-    def __call__(self):
-        run_celery_beat(log_level=self.log_level)
-
-
-@cappa.command(help='从当前主机启动 Celery flower 服务')
-@dataclass
-class Flower:
-    port: Annotated[int, cappa.Arg(long=True, default=8555, help='提供服务的主机端口号')]
-    basic_auth: Annotated[str, cappa.Arg(long=True, default='admin:123456', help='页面登录的用户名和密码')]
-
-    def __call__(self):
-        run_celery_flower(port=self.port, basic_auth=self.basic_auth)
-
-
-@cappa.command(help='运行 Celery 服务')
-@dataclass
-class Celery:
-    subcmd: cappa.Subcommands[Worker | Beat | Flower | None] = None
-
-    def __call__(self):
-        console.print('\n更多信息，尝试 "[cyan]--help[/]"')
-
-
-@cappa.command(help='Add a plugin')
+@cappa.command(help='Add plugin')
 @dataclass
 class Add:
     path: Annotated[
         str | None,
-        cappa.Arg(long=True, help='Full local path to the ZIP plugin'),
+        cappa.Arg(long=True, help='Full local path to ZIP plugin'),
     ]
     repo_url: Annotated[
         str | None,
-        cappa.Arg(long=True, help='Git repository URL of the plugin'),
+        cappa.Arg(long=True, help='Git repository URL for plugin'),
     ]
     no_sql: Annotated[
         bool,
-        cappa.Arg(long=True, default=False, help='Disable automatic execution of plugin SQL scripts'),
+        cappa.Arg(long=True, default=False, help='Disable automatic execution of plugin SQL script'),
     ]
     db_type: Annotated[
         DataBaseType,
-        cappa.Arg(long=True, default='mysql', help='Database type for executing plugin SQL scripts'),
+        cappa.Arg(long=True, default='mysql', help='Database type for executing plugin SQL script'),
     ]
     pk_type: Annotated[
         PrimaryKeyType,
@@ -270,11 +229,13 @@ class Add:
 class FbaCli:
     version: Annotated[
         bool,
-        cappa.Arg(short='-V', long=True, default=False, help='打印当前版本号'),
+        cappa.Arg(short='-V', long=True, default=False, show_default=False, help='Print current version'),
     ]
     sql: Annotated[
         str,
-        cappa.Arg(long=True, default='', help='在事务中执行 SQL 脚本'),
+        cappa.Arg(
+            value_name='PATH', long=True, default='', show_default=False, help='Execute SQL script in transaction'
+        ),
     ]
     subcmd: cappa.Subcommands[Run | Celery | Add | None] = None
 

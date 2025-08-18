@@ -20,15 +20,15 @@ from backend.plugin.config.service.config_service import config_service
 router = APIRouter()
 
 
-@router.get('/{pk}', summary='获取参数配置详情', dependencies=[DependsJwtAuth])
-async def get_config(pk: Annotated[int, Path(description='参数配置 ID')]) -> ResponseSchemaModel[GetConfigDetail]:
+@router.get('/{pk}', summary='Get config detail', dependencies=[DependsJwtAuth])
+async def get_config(pk: Annotated[int, Path(description='Config ID')]) -> ResponseSchemaModel[GetConfigDetail]:
     config = await config_service.get(pk=pk)
     return response_base.success(data=config)
 
 
 @router.get(
     '',
-    summary='分页获取所有参数配置',
+    summary='Get all configs with pagination',
     dependencies=[
         DependsJwtAuth,
         DependsPagination,
@@ -36,8 +36,8 @@ async def get_config(pk: Annotated[int, Path(description='参数配置 ID')]) ->
 )
 async def get_configs_paged(
     db: CurrentSession,
-    name: Annotated[str | None, Query(description='参数配置名称')] = None,
-    type: Annotated[str | None, Query(description='参数配置类型')] = None,
+    name: Annotated[str | None, Query(description='Config name')] = None,
+    type: Annotated[str | None, Query(description='Config type')] = None,
 ) -> ResponseSchemaModel[PageData[GetConfigDetail]]:
     config_select = await config_service.get_select(name=name, type=type)
     page_data = await paging_data(db, config_select)
@@ -46,7 +46,7 @@ async def get_configs_paged(
 
 @router.post(
     '',
-    summary='创建参数配置',
+    summary='Create config',
     dependencies=[
         Depends(RequestPermission('sys:config:add')),
         DependsRBAC,
@@ -59,13 +59,13 @@ async def create_config(obj: CreateConfigParam) -> ResponseModel:
 
 @router.put(
     '/{pk}',
-    summary='更新参数配置',
+    summary='Update config',
     dependencies=[
         Depends(RequestPermission('sys:config:edit')),
         DependsRBAC,
     ],
 )
-async def update_config(pk: Annotated[int, Path(description='参数配置 ID')], obj: UpdateConfigParam) -> ResponseModel:
+async def update_config(pk: Annotated[int, Path(description='Config ID')], obj: UpdateConfigParam) -> ResponseModel:
     count = await config_service.update(pk=pk, obj=obj)
     if count > 0:
         return response_base.success()
@@ -74,13 +74,13 @@ async def update_config(pk: Annotated[int, Path(description='参数配置 ID')],
 
 @router.delete(
     '',
-    summary='批量删除参数配置',
+    summary='Batch delete configs',
     dependencies=[
         Depends(RequestPermission('sys:config:del')),
         DependsRBAC,
     ],
 )
-async def delete_configs(pks: Annotated[list[int], Body(description='参数配置 ID 列表')]) -> ResponseModel:
+async def delete_configs(pks: Annotated[list[int], Body(description='Config ID list')]) -> ResponseModel:
     count = await config_service.delete(pks=pks)
     if count > 0:
         return response_base.success()

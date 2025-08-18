@@ -20,8 +20,12 @@ class TaskSchedulerSchemeBase(SchemaBase):
     exchange: str | None = Field(default=None, description='Low-level AMQP routing exchange')
     routing_key: str | None = Field(default=None, description='Low-level AMQP routing key')
     start_time: datetime | None = Field(default=None, description='Time when the task starts')
-    expire_time: datetime | None = Field(default=None, description='Deadline after which the task will not be triggered')
-    expire_seconds: int | None = Field(default=None, description='Time difference in seconds after which the task will not be triggered')
+    expire_time: datetime | None = Field(
+        default=None, description='Deadline after which the task will not be triggered'
+    )
+    expire_seconds: int | None = Field(
+        default=None, description='Time difference in seconds after which the task will not be triggered'
+    )
     type: TaskSchedulerType = Field(description='Schedule type (0 interval, 1 crontab)')
     interval_every: int | None = Field(default=None, description='Interval period before the task runs again')
     interval_period: PeriodType | None = Field(default=None, description='Type of interval between task runs')

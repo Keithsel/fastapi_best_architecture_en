@@ -28,7 +28,9 @@ async def get_data_rule_models() -> ResponseSchemaModel[list[str]]:
     return response_base.success(data=models)
 
 
-@router.get('/models/{model}/columns', summary='Get available model columns for data rules', dependencies=[DependsJwtAuth])
+@router.get(
+    '/models/{model}/columns', summary='Get available model columns for data rules', dependencies=[DependsJwtAuth]
+)
 async def get_data_rule_model_columns(
     model: Annotated[str, Path(description='Model name')],
 ) -> ResponseSchemaModel[list[GetDataRuleColumnDetail]]:

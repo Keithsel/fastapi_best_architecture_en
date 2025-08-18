@@ -38,17 +38,23 @@ async def rbac_verify(request: Request, _token: str = DependsJwtAuth) -> None:
     # Check user roles
     user_roles = request.user.roles
     if not user_roles or all(status == 0 for status in user_roles):
-        raise errors.AuthorizationError(msg='User has not been assigned a role, please contact the system administrator')
+        raise errors.AuthorizationError(
+            msg='User has not been assigned a role, please contact the system administrator'
+        )
 
     # Check user role menus
     if not any(len(role.menus) > 0 for role in user_roles):
-        raise errors.AuthorizationError(msg='User has not been assigned a menu, please contact the system administrator')
+        raise errors.AuthorizationError(
+            msg='User has not been assigned a menu, please contact the system administrator'
+        )
 
     # Check backend management operation permissions
     method = request.method
     if method != MethodType.GET or method != MethodType.OPTIONS:
         if not request.user.is_staff:
-            raise errors.AuthorizationError(msg='User is prohibited from backend management operations, please contact the system administrator')
+            raise errors.AuthorizationError(
+                msg='User is prohibited from backend management operations, please contact the system administrator'
+            )
 
     # RBAC authentication
     if settings.RBAC_ROLE_MENU_MODE:
@@ -80,7 +86,9 @@ async def rbac_verify(request: Request, _token: str = DependsJwtAuth) -> None:
             casbin_rbac = import_module_cached('backend.plugin.casbin_rbac.rbac')
             casbin_verify = getattr(casbin_rbac, 'casbin_verify')
         except (ImportError, AttributeError) as e:
-            log.error(f'RBAC permission verification is being performed via casbin, but this plugin does not exist: {e}')
+            log.error(
+                f'RBAC permission verification is being performed via casbin, but this plugin does not exist: {e}'
+            )
             raise errors.ServerError(msg='Permission verification failed, please contact the system administrator')
 
         await casbin_verify(request)

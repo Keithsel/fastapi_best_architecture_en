@@ -15,7 +15,7 @@ class {{ class_name }}Service:
     @staticmethod
     async def get(*, pk: int) -> {{ class_name }}:
         """
-        获取{{ doc_comment }}
+        Get {{ doc_comment }}
 
         :param pk: {{ doc_comment }} ID
         :return:
@@ -23,17 +23,17 @@ class {{ class_name }}Service:
         async with async_db_session() as db:
             {{ table_name }} = await {{ table_name }}_dao.get(db, pk)
             if not {{ table_name }}:
-                raise errors.NotFoundError(msg='{{ doc_comment }}不存在')
+                raise errors.NotFoundError(msg='{{ doc_comment }} does not exist')
             return {{ table_name }}
 
     @staticmethod
     async def get_select() -> Select:
-        """获取{{ doc_comment }}查询对象"""
+        """Get {{ doc_comment }} query object"""
         return await {{ table_name }}_dao.get_list()
 
     @staticmethod
     async def get_all() -> Sequence[{{ class_name }}]:
-        """获取所有{{ doc_comment }}"""
+        """Get all {{ doc_comment }}"""
         async with async_db_session() as db:
             {{ table_name }}s = await {{ table_name }}_dao.get_all(db)
             return {{ table_name }}s
@@ -41,9 +41,9 @@ class {{ class_name }}Service:
     @staticmethod
     async def create(*, obj: Create{{ schema_name }}Param) -> None:
         """
-        创建{{ doc_comment }}
+        Create {{ doc_comment }}
 
-        :param obj: 创建{{ doc_comment }}参数
+        :param obj: Create {{ doc_comment }} parameters
         :return:
         """
         async with async_db_session.begin() as db:
@@ -52,10 +52,10 @@ class {{ class_name }}Service:
     @staticmethod
     async def update(*, pk: int, obj: Update{{ schema_name }}Param) -> int:
         """
-        更新{{ doc_comment }}
+        Update {{ doc_comment }}
 
         :param pk: {{ doc_comment }} ID
-        :param obj: 更新{{ doc_comment }}参数
+        :param obj: Update {{ doc_comment }} parameters
         :return:
         """
         async with async_db_session.begin() as db:
@@ -65,9 +65,9 @@ class {{ class_name }}Service:
     @staticmethod
     async def delete(*, obj: Delete{{ schema_name }}Param) -> int:
         """
-        删除{{ doc_comment }}
+        Delete {{ doc_comment }}
 
-        :param obj: {{ doc_comment }} ID 列表
+        :param obj: List of {{ doc_comment }} IDs
         :return:
         """
         async with async_db_session.begin() as db:

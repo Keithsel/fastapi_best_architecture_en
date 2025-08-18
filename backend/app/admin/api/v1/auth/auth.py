@@ -16,7 +16,9 @@ from backend.common.security.jwt import DependsJwtAuth
 router = APIRouter()
 
 
-@router.post('/login/swagger', summary='For Swagger Debugging', description='Quickly obtain a token for Swagger authentication')
+@router.post(
+    '/login/swagger', summary='For Swagger Debugging', description='Quickly obtain a token for Swagger authentication'
+)
 async def login_swagger(obj: Annotated[HTTPBasicCredentials, Depends()]) -> GetSwaggerToken:
     token, user = await auth_service.swagger_login(obj=obj)
     return GetSwaggerToken(access_token=token, user=user)
@@ -35,7 +37,12 @@ async def login(
     return response_base.success(data=data)
 
 
-@router.get('/codes', summary='Get All Authorization Codes', description='Compatible with vben admin v5', dependencies=[DependsJwtAuth])
+@router.get(
+    '/codes',
+    summary='Get All Authorization Codes',
+    description='Compatible with vben admin v5',
+    dependencies=[DependsJwtAuth],
+)
 async def get_codes(request: Request) -> ResponseSchemaModel[list[str]]:
     codes = await auth_service.get_codes(request=request)
     return response_base.success(data=codes)

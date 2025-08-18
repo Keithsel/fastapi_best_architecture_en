@@ -10,30 +10,30 @@ from backend.plugin.dict.schema.dict_type import CreateDictTypeParam, DeleteDict
 
 
 class DictTypeService:
-    """字典类型服务类"""
+    """Dictionary Type Service Class"""
 
     @staticmethod
     async def get(*, pk) -> DictType:
         """
-        获取字典类型详情
+        Get dictionary type details
 
-        :param pk: 字典类型 ID
+        :param pk: Dictionary type ID
         :return:
         """
         async with async_db_session() as db:
             dict_type = await dict_type_dao.get(db, pk)
             if not dict_type:
-                raise errors.NotFoundError(msg='字典类型不存在')
+                raise errors.NotFoundError(msg='Dictionary type does not exist')
             return dict_type
 
     @staticmethod
     async def get_select(*, name: str | None, code: str | None, status: int | None) -> Select:
         """
-        获取字典类型列表查询条件
+        Get dictionary type list query conditions
 
-        :param name: 字典类型名称
-        :param code: 字典类型编码
-        :param status: 状态
+        :param name: Dictionary type name
+        :param code: Dictionary type code
+        :param status: Status
         :return:
         """
         return await dict_type_dao.get_list(name=name, code=code, status=status)
@@ -41,42 +41,42 @@ class DictTypeService:
     @staticmethod
     async def create(*, obj: CreateDictTypeParam) -> None:
         """
-        创建字典类型
+        Create dictionary type
 
-        :param obj: 字典类型创建参数
+        :param obj: Dictionary type creation parameters
         :return:
         """
         async with async_db_session.begin() as db:
             dict_type = await dict_type_dao.get_by_code(db, obj.code)
             if dict_type:
-                raise errors.ConflictError(msg='字典类型已存在')
+                raise errors.ConflictError(msg='Dictionary type already exists')
             await dict_type_dao.create(db, obj)
 
     @staticmethod
     async def update(*, pk: int, obj: UpdateDictTypeParam) -> int:
         """
-        更新字典类型
+        Update dictionary type
 
-        :param pk: 字典类型 ID
-        :param obj: 字典类型更新参数
+        :param pk: Dictionary type ID
+        :param obj: Dictionary type update parameters
         :return:
         """
         async with async_db_session.begin() as db:
             dict_type = await dict_type_dao.get(db, pk)
             if not dict_type:
-                raise errors.NotFoundError(msg='字典类型不存在')
+                raise errors.NotFoundError(msg='Dictionary type does not exist')
             if dict_type.code != obj.code:
                 if await dict_type_dao.get_by_code(db, obj.code):
-                    raise errors.ConflictError(msg='字典类型已存在')
+                    raise errors.ConflictError(msg='Dictionary type already exists')
             count = await dict_type_dao.update(db, pk, obj)
             return count
 
     @staticmethod
     async def delete(*, obj: DeleteDictTypeParam) -> int:
         """
-        批量删除字典类型
+        Batch delete dictionary types
 
-        :param obj: 字典类型 ID 列表
+        :param obj: Dictionary type ID list
         :return:
         """
         async with async_db_session.begin() as db:

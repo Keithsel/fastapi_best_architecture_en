@@ -14,16 +14,16 @@ if TYPE_CHECKING:
 
 
 class UserSocial(Base):
-    """用户社交表（OAuth2）"""
+    """User Social Table (OAuth2)"""
 
     __tablename__ = 'sys_user_social'
 
     id: Mapped[id_key] = mapped_column(init=False)
-    sid: Mapped[str] = mapped_column(String(20), comment='第三方用户 ID')
-    source: Mapped[str] = mapped_column(String(20), comment='第三方用户来源')
+    sid: Mapped[str] = mapped_column(String(20), comment='Third-party user ID')
+    source: Mapped[str] = mapped_column(String(20), comment='Third-party source')
 
-    # 用户社交信息一对多
+    # One-to-many relationship for user social info
     user_id: Mapped[int] = mapped_column(
-        BigInteger, ForeignKey('sys_user.id', ondelete='CASCADE'), comment='用户关联ID'
+        BigInteger, ForeignKey('sys_user.id', ondelete='CASCADE'), comment='Associated user ID'
     )
     user: Mapped[User | None] = relationship(init=False, backref='socials')

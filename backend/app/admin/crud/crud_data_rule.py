@@ -89,4 +89,3 @@ class CRUDDataRule(CRUDPlus[DataRule]):
 
 
 data_rule_dao: CRUDDataRule = CRUDDataRule(DataRule)
-

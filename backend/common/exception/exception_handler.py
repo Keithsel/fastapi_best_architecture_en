@@ -44,7 +44,7 @@ async def _validation_exception_handler(request: Request, exc: RequestValidation
     """
     errors = []
     for error in exc.errors():
-        # 非 en-US 语言下，使用自定义错误信息
+        # For non en-US languages, use custom error messages
         if i18n.current_language != 'en-US':
             custom_message = t(f'pydantic.{error["type"]}')
             if custom_message:

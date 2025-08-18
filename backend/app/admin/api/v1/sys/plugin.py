@@ -46,7 +46,12 @@ async def install_plugin(
     plugin_name = await plugin_service.install(type=type, file=file, repo_url=repo_url)
     return response_base.success(
         res=CustomResponse(
-            code=200, msg=f'Plugin {plugin_name} installed successfully. Please refer to the plugin instructions (README.md) for configuration and restart the service.'
+            code=200,
+            msg=(
+                f'Plugin {plugin_name} installed successfully. '
+                'Please refer to the plugin instructions (README.md) for configuration '
+                'and restart the service.'
+            ),
         )
     )
 
@@ -54,7 +59,10 @@ async def install_plugin(
 @router.delete(
     '/{plugin}',
     summary='Uninstall plugin',
-    description='This operation will directly remove plugin dependencies, but will not directly delete the plugin. Instead, the plugin will be moved to a backup directory.',
+    description=(
+        'This operation will directly remove plugin dependencies, but will not directly delete the plugin. '
+        'Instead, the plugin will be moved to a backup directory.'
+    ),
     dependencies=[
         Depends(RequestPermission('sys:plugin:uninstall')),
         DependsRBAC,
@@ -63,7 +71,14 @@ async def install_plugin(
 async def uninstall_plugin(plugin: Annotated[str, Path(description='Plugin name')]) -> ResponseModel:
     await plugin_service.uninstall(plugin=plugin)
     return response_base.success(
-        res=CustomResponse(code=200, msg=f'Plugin {plugin} uninstalled successfully. Please remove related configurations according to the plugin instructions (README.md) and restart the service.')
+        res=CustomResponse(
+            code=200,
+            msg=(
+                f'Plugin {plugin} uninstalled successfully. '
+                'Please remove related configurations according to the plugin instructions (README.md) '
+                'and restart the service.'
+            ),
+        )
     )
 
 

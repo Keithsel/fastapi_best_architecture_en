@@ -27,13 +27,14 @@ from backend.utils._await import run_await
 from backend.utils.serializers import select_as_dict
 from backend.utils.timezone import timezone
 
-# This scheduler must wake up more frequently than the regular 5 minutes, as it needs to consider external changes to the schedule
+# This scheduler must wake up more frequently than the regular 5 minutes,
+# as it needs to consider external changes to the schedule
 DEFAULT_MAX_INTERVAL = 5  # seconds
 
-# 计划锁时长，避免重复创建
+# Schedule lock duration to avoid duplicate creation
 DEFAULT_MAX_LOCK_TIMEOUT = 300  # seconds
 
-# 锁检测周期，应小于计划锁时长
+# Lock check interval, should be less than schedule lock duration
 DEFAULT_LOCK_INTERVAL = 60  # seconds
 
 # Copied from:
@@ -294,7 +295,7 @@ class ModelEntry(ScheduleEntry):
 
 
 class DatabaseScheduler(Scheduler):
-    """数据库调度程序"""
+    """Database scheduler"""
 
     Entry = ModelEntry
 
@@ -355,7 +356,7 @@ class DatabaseScheduler(Scheduler):
         return new_entry
 
     def close(self):
-        """重写父函数"""
+        """Override parent function"""
         if self.lock:
             logger.info('beat: Releasing lock')
             if run_await(self.lock.owned)():
@@ -454,9 +455,9 @@ class DatabaseScheduler(Scheduler):
 
 async def extend_scheduler_lock(lock):
     """
-    延长调度程序锁
+    Extend scheduler lock
 
-    :param lock: 计划程序锁
+    :param lock: Scheduler lock
     :return:
     """
     while True:
@@ -471,9 +472,9 @@ async def extend_scheduler_lock(lock):
 @beat_init.connect
 def acquire_distributed_beat_lock(sender=None, *args, **kwargs):
     """
-    尝试在启动时获取锁
+    Try to acquire lock at startup
 
-    :param sender: 接收方应响应的发送方
+    :param sender: The sender that the receiver should respond to
     :return:
     """
     scheduler = sender.scheduler

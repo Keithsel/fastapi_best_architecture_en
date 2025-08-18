@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="en"></html>
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>验证码</title>
+    <title>Verification Code</title>
     <style>
         body {
             margin: 0;
@@ -60,20 +60,20 @@
         <tr>
             <td align="center" style="padding: 40px 0;">
                 <div class="container">
-                    <div class="title">验证码</div>
-                    <p style="margin-top:20px;">您好，您正在进行绑定操作，请使用以下验证码：</p>
+                    <div class="title">Verification Code</div>
+                    <p style="margin-top:20px;">Hello, you are performing a binding operation. Please use the following verification code:</p>
                     <span class="code">{{code}}</span>
-                    <p class="tips">验证码有效期为 <strong>{{expired}}分钟</strong>，请勿泄露给他人。</p>
+                    <p class="tips">The verification code is valid for <strong>{{expired}} minutes</strong>. Please do not disclose it to others.</p>
                     <p class="tips">
-                        如有疑问，可通过【
+                        If you have any questions, you can get help via [
                         <a href="https://fastapi-practices.github.io/fastapi_best_architecture_docs/backend/reference/config.html#captcha-login-expire-seconds">
-                            官网-互动
+                            Official Website - Interaction
                         </a>
-                        】获取帮助，感谢您对 fba 的支持！
+                        ]. Thank you for supporting fba!
                     </p>
                     <div class="footer">
-                        如果这不是您的操作，请忽略此邮件。<br>
-                        本邮件由系统自动发送，请勿直接回复。
+                        If this was not your operation, please ignore this email.<br>
+                        This email was sent automatically by the system, please do not reply directly.
                     </div>
                 </div>
             </td>

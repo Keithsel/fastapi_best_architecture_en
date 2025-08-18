@@ -11,44 +11,44 @@ from backend.plugin.config.schema.config import CreateConfigParam, UpdateConfigP
 
 
 class CRUDConfig(CRUDPlus[Config]):
-    """系统参数参数配置数据库操作类"""
+    """System parameter configuration database operation class"""
 
     async def get(self, db: AsyncSession, pk: int) -> Config | None:
         """
-        获取参数配置详情
+        Get parameter configuration details
 
-        :param db: 数据库会话
-        :param pk: 参数配置 ID
+        :param db: Database session
+        :param pk: Parameter configuration ID
         :return:
         """
         return await self.select_model_by_column(db, id=pk)
 
     async def get_by_type(self, db: AsyncSession, type: str) -> Sequence[Config | None]:
         """
-        通过键名获取参数配置
+        Get parameter configuration by type
 
-        :param db: 数据库会话
-        :param type: 参数配置类型
+        :param db: Database session
+        :param type: Parameter configuration type
         :return:
         """
         return await self.select_models(db, type=type)
 
     async def get_by_key(self, db: AsyncSession, key: str) -> Config | None:
         """
-        通过键名获取参数配置
+        Get parameter configuration by key
 
-        :param db: 数据库会话
-        :param key: 参数配置键名
+        :param db: Database session
+        :param key: Parameter configuration key
         :return:
         """
         return await self.select_model_by_column(db, key=key)
 
     async def get_list(self, name: str | None, type: str | None) -> Select:
         """
-        获取参数配置列表
+        Get parameter configuration list
 
-        :param name: 参数配置名称
-        :param type: 参数配置类型
+        :param name: Parameter configuration name
+        :param type: Parameter configuration type
         :return:
         """
         filters = {}
@@ -62,31 +62,31 @@ class CRUDConfig(CRUDPlus[Config]):
 
     async def create(self, db: AsyncSession, obj: CreateConfigParam) -> None:
         """
-        创建参数配置
+        Create parameter configuration
 
-        :param db: 数据库会话
-        :param obj: 创建参数配置参数
+        :param db: Database session
+        :param obj: Create parameter configuration parameters
         :return:
         """
         await self.create_model(db, obj)
 
     async def update(self, db: AsyncSession, pk: int, obj: UpdateConfigParam) -> int:
         """
-        更新参数配置
+        Update parameter configuration
 
-        :param db: 数据库会话
-        :param pk: 参数配置 ID
-        :param obj: 更新参数配置参数
+        :param db: Database session
+        :param pk: Parameter configuration ID
+        :param obj: Update parameter configuration parameters
         :return:
         """
         return await self.update_model(db, pk, obj)
 
     async def delete(self, db: AsyncSession, pks: list[int]) -> int:
         """
-        批量删除参数配置
+        Batch delete parameter configurations
 
-        :param db: 数据库会话
-        :param pks: 参数配置 ID 列表
+        :param db: Database session
+        :param pks: Parameter configuration ID list
         :return:
         """
         return await self.delete_model_by_column(db, allow_multiple=True, id__in=pks)

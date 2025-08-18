@@ -41,7 +41,9 @@ async def http_limit_callback(request: Request, response: Response, expire: int)
     """
     expires = ceil(expire / 1000)
     raise errors.HTTPError(
-        code=StandardResponseCode.HTTP_429, msg='Too many requests, please try again later', headers={'Retry-After': str(expires)}
+        code=StandardResponseCode.HTTP_429,
+        msg='Too many requests, please try again later',
+        headers={'Retry-After': str(expires)},
     )
 
 

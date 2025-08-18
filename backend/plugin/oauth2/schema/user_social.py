@@ -7,17 +7,17 @@ from backend.common.schema import SchemaBase
 
 
 class UserSocialSchemaBase(SchemaBase):
-    """用户社交基础模型"""
+    """User social base model"""
 
-    sid: str = Field(description='第三方用户 ID')
-    source: UserSocialType = Field(description='社交平台')
+    sid: str = Field(description='Third-party user ID')
+    source: UserSocialType = Field(description='Social platform')
 
 
 class CreateUserSocialParam(UserSocialSchemaBase):
-    """创建用户社交参数"""
+    """Parameters for creating user social"""
 
-    user_id: int = Field(description='用户 ID')
+    user_id: int = Field(description='User ID')
 
 
 class UpdateUserSocialParam(SchemaBase):
-    """更新用户社交参数"""
+    """Parameters for updating user social"""

@@ -28,11 +28,13 @@ class _EnumBase:
 
 class IntEnum(_EnumBase, SourceIntEnum):
     """Integer enum base class"""
+
     pass
 
 
 class StrEnum(_EnumBase, str, Enum):
     """String enum base class"""
+
     pass
 
 

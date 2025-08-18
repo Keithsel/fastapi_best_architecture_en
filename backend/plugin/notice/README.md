@@ -1,3 +1,3 @@
-## 通知公告
+## Notice Announcement
 
-内置插件，可直接使用
+Built-in plugin, ready to use.

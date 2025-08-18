@@ -36,12 +36,18 @@ class TaskScheduler(Base):
     exchange: Mapped[str | None] = mapped_column(String(255), comment='Low-level AMQP routing exchange')
     routing_key: Mapped[str | None] = mapped_column(String(255), comment='Low-level AMQP routing key')
     start_time: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), comment='Time when the task starts')
-    expire_time: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), comment='Deadline after which the task will not be triggered')
-    expire_seconds: Mapped[int | None] = mapped_column(comment='Time difference in seconds after which the task will not be triggered')
+    expire_time: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True), comment='Deadline after which the task will not be triggered'
+    )
+    expire_seconds: Mapped[int | None] = mapped_column(
+        comment='Time difference in seconds after which the task will not be triggered'
+    )
     type: Mapped[int] = mapped_column(comment='Schedule type (0 interval, 1 crontab)')
     interval_every: Mapped[int | None] = mapped_column(comment='Interval period before the task runs again')
     interval_period: Mapped[str | None] = mapped_column(String(255), comment='Type of interval between task runs')
-    crontab: Mapped[str | None] = mapped_column(String(50), default='* * * * *', comment='Crontab schedule for the task')
+    crontab: Mapped[str | None] = mapped_column(
+        String(50), default='* * * * *', comment='Crontab schedule for the task'
+    )
     one_off: Mapped[bool] = mapped_column(
         Boolean().with_variant(INTEGER, 'postgresql'), default=False, comment='Whether to run only once'
     )

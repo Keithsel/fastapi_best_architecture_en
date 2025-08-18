@@ -22,15 +22,15 @@ from backend.plugin.code_generator.service.column_service import gen_column_serv
 router = APIRouter()
 
 
-@router.get('/all', summary='获取所有代码生成业务', dependencies=[DependsJwtAuth])
+@router.get('/all', summary='Get all code generation businesses', dependencies=[DependsJwtAuth])
 async def get_all_businesses() -> ResponseSchemaModel[list[GetGenBusinessDetail]]:
     data = await gen_business_service.get_all()
     return response_base.success(data=data)
 
 
-@router.get('/{pk}', summary='获取代码生成业务详情', dependencies=[DependsJwtAuth])
+@router.get('/{pk}', summary='Get code generation business details', dependencies=[DependsJwtAuth])
 async def get_business(
-    pk: Annotated[int, Path(description='业务 ID')],
+    pk: Annotated[int, Path(description='Business ID')],
 ) -> ResponseSchemaModel[GetGenBusinessDetail]:
     data = await gen_business_service.get(pk=pk)
     return response_base.success(data=data)
@@ -38,7 +38,7 @@ async def get_business(
 
 @router.get(
     '',
-    summary='分页获取所有代码生成业务',
+    summary='Get all code generation businesses with pagination',
     dependencies=[
         DependsJwtAuth,
         DependsPagination,
@@ -46,16 +46,18 @@ async def get_business(
 )
 async def get_businesses_paged(
     db: CurrentSession,
-    table_name: Annotated[str | None, Query(description='代码生成业务表名称')] = None,
+    table_name: Annotated[str | None, Query(description='Code generation business table name')] = None,
 ) -> ResponseSchemaModel[PageData[GetGenBusinessDetail]]:
     business_select = await gen_business_service.get_select(table_name=table_name)
     page_data = await paging_data(db, business_select)
     return response_base.success(data=page_data)
 
 
-@router.get('/{pk}/columns', summary='获取代码生成业务所有模型列', dependencies=[DependsJwtAuth])
+@router.get(
+    '/{pk}/columns', summary='Get all model columns for a code generation business', dependencies=[DependsJwtAuth]
+)
 async def get_business_all_columns(
-    pk: Annotated[int, Path(description='业务 ID')],
+    pk: Annotated[int, Path(description='Business ID')],
 ) -> ResponseSchemaModel[list[GetGenColumnDetail]]:
     data = await gen_column_service.get_columns(business_id=pk)
     return response_base.success(data=data)
@@ -63,7 +65,7 @@ async def get_business_all_columns(
 
 @router.post(
     '',
-    summary='创建代码生成业务',
+    summary='Create code generation business',
     deprecated=True,
     dependencies=[
         Depends(RequestPermission('codegen:business:add')),
@@ -77,14 +79,14 @@ async def create_business(obj: CreateGenBusinessParam) -> ResponseModel:
 
 @router.put(
     '/{pk}',
-    summary='更新代码生成业务',
+    summary='Update code generation business',
     dependencies=[
         Depends(RequestPermission('codegen:business:edit')),
         DependsRBAC,
     ],
 )
 async def update_business(
-    pk: Annotated[int, Path(description='业务 ID')], obj: UpdateGenBusinessParam
+    pk: Annotated[int, Path(description='Business ID')], obj: UpdateGenBusinessParam
 ) -> ResponseModel:
     count = await gen_business_service.update(pk=pk, obj=obj)
     if count > 0:
@@ -94,13 +96,13 @@ async def update_business(
 
 @router.delete(
     '/{pk}',
-    summary='删除代码生成业务',
+    summary='Delete code generation business',
     dependencies=[
         Depends(RequestPermission('codegen:business:del')),
         DependsRBAC,
     ],
 )
-async def delete_business(pk: Annotated[int, Path(description='业务 ID')]) -> ResponseModel:
+async def delete_business(pk: Annotated[int, Path(description='Business ID')]) -> ResponseModel:
     count = await gen_business_service.delete(pk=pk)
     if count > 0:
         return response_base.success()

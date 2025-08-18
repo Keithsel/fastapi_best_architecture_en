@@ -12,34 +12,34 @@ from backend.plugin.code_generator.schema.business import CreateGenBusinessParam
 
 
 class GenBusinessService:
-    """代码生成业务服务类"""
+    """Code Generation Business Service Class"""
 
     @staticmethod
     async def get(*, pk: int) -> GenBusiness:
         """
-        获取指定 ID 的业务
+        Get business by specified ID
 
-        :param pk: 业务 ID
+        :param pk: Business ID
         :return:
         """
         async with async_db_session() as db:
             business = await gen_business_dao.get(db, pk)
             if not business:
-                raise errors.NotFoundError(msg='代码生成业务不存在')
+                raise errors.NotFoundError(msg='Code generation business does not exist')
             return business
 
     @staticmethod
     async def get_all() -> Sequence[GenBusiness]:
-        """获取所有业务"""
+        """Get all businesses"""
         async with async_db_session() as db:
             return await gen_business_dao.get_all(db)
 
     @staticmethod
     async def get_select(*, table_name: str) -> Select:
         """
-        获取代码生成业务列表查询条件
+        Get query condition for code generation business list
 
-        :param table_name: 业务表名
+        :param table_name: Business table name
         :return:
         """
         return await gen_business_dao.get_list(table_name=table_name)
@@ -47,24 +47,24 @@ class GenBusinessService:
     @staticmethod
     async def create(*, obj: CreateGenBusinessParam) -> None:
         """
-        创建业务
+        Create business
 
-        :param obj: 创建业务参数
+        :param obj: Parameters for creating business
         :return:
         """
         async with async_db_session.begin() as db:
             business = await gen_business_dao.get_by_name(db, obj.table_name)
             if business:
-                raise errors.ConflictError(msg='代码生成业务已存在')
+                raise errors.ConflictError(msg='Code generation business already exists')
             await gen_business_dao.create(db, obj)
 
     @staticmethod
     async def update(*, pk: int, obj: UpdateGenBusinessParam) -> int:
         """
-        更新业务
+        Update business
 
-        :param pk: 业务 ID
-        :param obj: 更新业务参数
+        :param pk: Business ID
+        :param obj: Parameters for updating business
         :return:
         """
         async with async_db_session.begin() as db:
@@ -73,9 +73,9 @@ class GenBusinessService:
     @staticmethod
     async def delete(*, pk: int) -> int:
         """
-        删除业务
+        Delete business
 
-        :param pk: 业务 ID
+        :param pk: Business ID
         :return:
         """
         async with async_db_session.begin() as db:

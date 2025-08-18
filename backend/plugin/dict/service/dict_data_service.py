@@ -13,20 +13,20 @@ from backend.plugin.dict.schema.dict_data import CreateDictDataParam, DeleteDict
 
 
 class DictDataService:
-    """字典数据服务类"""
+    """Dictionary Data Service Class"""
 
     @staticmethod
     async def get(*, pk: int) -> DictData:
         """
-        获取字典数据详情
+        Get dictionary data details
 
-        :param pk: 字典数据 ID
+        :param pk: Dictionary data ID
         :return:
         """
         async with async_db_session() as db:
             dict_data = await dict_data_dao.get(db, pk)
             if not dict_data:
-                raise errors.NotFoundError(msg='字典数据不存在')
+                raise errors.NotFoundError(msg='Dictionary data does not exist')
             return dict_data
 
     @staticmethod
@@ -40,13 +40,13 @@ class DictDataService:
         *, type_code: str | None, label: str | None, value: str | None, status: int | None, type_id: int | None
     ) -> Select:
         """
-        获取字典数据列表查询条件
+        Get dictionary data list query conditions
 
-        :param type_code: 字典类型编码
-        :param label: 字典数据标签
-        :param value: 字典数据键值
-        :param status: 状态
-        :param type_id: 字典类型 ID
+        :param type_code: Dictionary type code
+        :param label: Dictionary data label
+        :param value: Dictionary data value
+        :param status: Status
+        :param type_id: Dictionary type ID
         :return:
         """
         return await dict_data_dao.get_list(
@@ -56,48 +56,48 @@ class DictDataService:
     @staticmethod
     async def create(*, obj: CreateDictDataParam) -> None:
         """
-        创建字典数据
+        Create dictionary data
 
-        :param obj: 字典数据创建参数
+        :param obj: Dictionary data creation parameters
         :return:
         """
         async with async_db_session.begin() as db:
             dict_data = await dict_data_dao.get_by_label(db, obj.label)
             if dict_data:
-                raise errors.ConflictError(msg='字典数据已存在')
+                raise errors.ConflictError(msg='Dictionary data already exists')
             dict_type = await dict_type_dao.get(db, obj.type_id)
             if not dict_type:
-                raise errors.NotFoundError(msg='字典类型不存在')
+                raise errors.NotFoundError(msg='Dictionary type does not exist')
             await dict_data_dao.create(db, obj, dict_type.code)
 
     @staticmethod
     async def update(*, pk: int, obj: UpdateDictDataParam) -> int:
         """
-        更新字典数据
+        Update dictionary data
 
-        :param pk: 字典数据 ID
-        :param obj: 字典数据更新参数
+        :param pk: Dictionary data ID
+        :param obj: Dictionary data update parameters
         :return:
         """
         async with async_db_session.begin() as db:
             dict_data = await dict_data_dao.get(db, pk)
             if not dict_data:
-                raise errors.NotFoundError(msg='字典数据不存在')
+                raise errors.NotFoundError(msg='Dictionary data does not exist')
             if dict_data.label != obj.label:
                 if await dict_data_dao.get_by_label(db, obj.label):
-                    raise errors.ConflictError(msg='字典数据已存在')
+                    raise errors.ConflictError(msg='Dictionary data already exists')
             dict_type = await dict_type_dao.get(db, obj.type_id)
             if not dict_type:
-                raise errors.NotFoundError(msg='字典类型不存在')
+                raise errors.NotFoundError(msg='Dictionary type does not exist')
             count = await dict_data_dao.update(db, pk, obj, dict_type.code)
             return count
 
     @staticmethod
     async def delete(*, obj: DeleteDictDataParam) -> int:
         """
-        批量删除字典数据
+        Batch delete dictionary data
 
-        :param obj: 字典数据 ID 列表
+        :param obj: Dictionary data ID list
         :return:
         """
         async with async_db_session.begin() as db:

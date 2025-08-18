@@ -118,11 +118,14 @@ class ResponseBase:
         data: Any | None = None,
     ) -> Response:
         """
-        This method is created to improve API response speed. It has significant performance improvement when parsing large JSON, but will lose Pydantic parsing and validation.
+        This method is created to improve API response speed.
+        It has significant performance improvement when parsing large JSON,
+        but will lose Pydantic parsing and validation.
 
         .. warning::
 
-            When using this return method, you cannot specify the response_model parameter or arrow return type for the endpoint.
+            When using this return method, you cannot specify the response_model parameter
+            or arrow return type for the endpoint.
 
         :param res: Response information
         :param data: Response data

@@ -36,9 +36,9 @@ class OperaLogService:
     @staticmethod
     async def bulk_create(*, objs: list[CreateOperaLogParam]) -> None:
         """
-        批量创建操作日志
+        Bulk create operation logs
 
-        :param objs: 操作日志创建参数列表
+        :param objs: List of operation log creation parameters
         :return:
         """
         async with async_db_session.begin() as db:

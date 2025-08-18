@@ -35,4 +35,6 @@ def dynamic_import_data_model(module_path: str) -> Type[T]:
         return getattr(module, class_name)
     except (ImportError, AttributeError) as e:
         log.error(f'Failed to dynamically import data model: {e}')
-        raise errors.ServerError(msg='Failed to dynamically parse data model column, please contact the system super administrator')
+        raise errors.ServerError(
+            msg='Failed to dynamically parse data model column, please contact the system super administrator'
+        )

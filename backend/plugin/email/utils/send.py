@@ -24,12 +24,12 @@ from backend.utils.timezone import timezone
 
 async def render_message(subject: str, from_header: str, content: str | dict, template: str | None) -> bytes:
     """
-    渲染邮件内容
+    Render email content
 
-    :param subject: 邮件内容主题
-    :param from_header: 邮件来源
-    :param content: 邮件内容
-    :param template: 邮件内容模板
+    :param subject: Email subject
+    :param from_header: Email sender
+    :param content: Email content
+    :param template: Email content template
     :return:
     """
     message = MIMEMultipart()
@@ -57,19 +57,19 @@ async def send_email(
     template: str | None = None,
 ):
     """
-    发送电子邮件
+    Send email
 
-    :param db: 数据库会话
-    :param recipients: 邮件接收者
-    :param subject: 邮件内容主题
-    :param content: 邮件内容
-    :param template: 邮件内容模板
+    :param db: Database session
+    :param recipients: Email recipients
+    :param subject: Email subject
+    :param content: Email content
+    :param template: Email content template
     :return:
     """
-    # 动态配置
+    # Dynamic configuration
     dynamic_email_config = None
 
-    # 检查 config 插件配置
+    # Check config plugin configuration
     def get_config_table(conn):
         inspector = inspect(conn)
         return inspector.has_table('sys_config', schema=None)
@@ -81,12 +81,17 @@ async def send_email(
         dynamic_email_config = await config_dao.get_by_type(db, 'email')
 
     try:
-        # 动态配置发送
+        # Send using dynamic configuration
         if dynamic_email_config:
             configs = {d['key']: d for d in select_list_serialize(dynamic_email_config)}
             if configs.get('EMAIL_STATUS'):
                 if len(dynamic_email_config) < 6:
-                    raise errors.NotFoundError(msg='缺少邮件动态配置，请检查系统参数配置-邮件配置')
+                    raise errors.NotFoundError(
+                        msg=(
+                            'Missing dynamic email configuration, please check '
+                            'system parameter configuration - email settings'
+                        )
+                    )
                 smtp_client = SMTP(
                     hostname=configs.get('EMAIL_HOST'),
                     port=configs.get('EMAIL_PORT'),
@@ -97,7 +102,7 @@ async def send_email(
                     await smtp_client.login(configs.get('EMAIL_USERNAME'), configs.get('EMAIL_PASSWORD'))  # type: ignore
                     await smtp_client.sendmail(configs.get('EMAIL_USERNAME'), recipients, message)  # type: ignore
 
-        # 本地配置发送
+        # Send using local configuration
         message = await render_message(subject, settings.EMAIL_USERNAME, content, template)
         smtp_client = SMTP(
             hostname=settings.EMAIL_HOST,
@@ -108,4 +113,4 @@ async def send_email(
             await smtp_client.login(settings.EMAIL_USERNAME, settings.EMAIL_PASSWORD)
             await smtp_client.sendmail(settings.EMAIL_USERNAME, recipients, message)
     except Exception as e:
-        log.error(f'电子邮件发送失败：{e}')
+        log.error(f'Failed to send email: {e}')

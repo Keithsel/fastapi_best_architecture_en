@@ -28,14 +28,14 @@ from backend.plugin.code_generator.utils.type_conversion import sql_type_to_pyda
 
 
 class GenService:
-    """代码生成服务类"""
+    """Code Generation Service Class"""
 
     @staticmethod
     async def get_tables(*, table_schema: str) -> Sequence[RowMapping]:
         """
-        获取指定 schema 下的所有表名
+        Get all table names under the specified schema
 
-        :param table_schema: 数据库 schema 名称
+        :param table_schema: Database schema name
         :return:
         """
         async with async_db_session() as db:
@@ -44,19 +44,19 @@ class GenService:
     @staticmethod
     async def import_business_and_model(*, obj: ImportParam) -> None:
         """
-        导入业务和模型列数据
+        Import business and model column data
 
-        :param obj: 导入参数对象
+        :param obj: Import parameter object
         :return:
         """
         async with async_db_session.begin() as db:
             table_info = await gen_dao.get_table(db, obj.table_name)
             if not table_info:
-                raise errors.NotFoundError(msg='数据库表不存在')
+                raise errors.NotFoundError(msg='Database table does not exist')
 
             business_info = await gen_business_dao.get_by_name(db, obj.table_name)
             if business_info:
-                raise errors.ConflictError(msg='已存在相同数据库表业务')
+                raise errors.ConflictError(msg='A business with the same database table already exists')
 
             table_name = table_info[0]
             new_business = GenBusiness(
@@ -95,14 +95,14 @@ class GenService:
     @staticmethod
     async def render_tpl_code(*, business: GenBusiness) -> dict[str, str]:
         """
-        渲染模板代码
+        Render template code
 
-        :param business: 业务对象
+        :param business: Business object
         :return:
         """
         gen_models = await gen_column_service.get_columns(business_id=business.id)
         if not gen_models:
-            raise errors.NotFoundError(msg='代码生成模型表为空')
+            raise errors.NotFoundError(msg='Code generation model table is empty')
 
         gen_vars = gen_template.get_vars(business, gen_models)
         return {
@@ -112,15 +112,15 @@ class GenService:
 
     async def preview(self, *, pk: int) -> dict[str, bytes]:
         """
-        预览生成的代码
+        Preview generated code
 
-        :param pk: 业务 ID
+        :param pk: Business ID
         :return:
         """
         async with async_db_session() as db:
             business = await gen_business_dao.get(db, pk)
             if not business:
-                raise errors.NotFoundError(msg='业务不存在')
+                raise errors.NotFoundError(msg='Business does not exist')
 
             tpl_code_map = await self.render_tpl_code(business=business)
 
@@ -147,15 +147,15 @@ class GenService:
     @staticmethod
     async def get_generate_path(*, pk: int) -> list[str]:
         """
-        获取代码生成路径
+        Get code generation paths
 
-        :param pk: 业务 ID
+        :param pk: Business ID
         :return:
         """
         async with async_db_session() as db:
             business = await gen_business_dao.get(db, pk)
             if not business:
-                raise errors.NotFoundError(msg='业务不存在')
+                raise errors.NotFoundError(msg='Business does not exist')
 
             gen_path = business.gen_path or 'fba-backend-app-dir'
             target_files = gen_template.get_code_gen_paths(business)
@@ -164,15 +164,15 @@ class GenService:
 
     async def generate(self, *, pk: int) -> None:
         """
-        生成代码文件
+        Generate code files
 
-        :param pk: 业务 ID
+        :param pk: Business ID
         :return:
         """
         async with async_db_session() as db:
             business = await gen_business_dao.get(db, pk)
             if not business:
-                raise errors.NotFoundError(msg='业务不存在')
+                raise errors.NotFoundError(msg='Business does not exist')
 
             tpl_code_map = await self.render_tpl_code(business=business)
             gen_path = business.gen_path or os.path.join(BASE_PATH, 'app')
@@ -183,7 +183,7 @@ class GenService:
                     *gen_template.get_code_gen_path(tpl_path, business).split('/'),
                 )
 
-                # 写入 init 文件
+                # Write init file
                 str_code_filepath = str(code_filepath)
                 code_folder = Path(str_code_filepath).parent
                 code_folder.mkdir(parents=True, exist_ok=True)
@@ -205,7 +205,7 @@ class GenService:
                     async with aiofiles.open(app_init_filepath, 'w', encoding='utf-8') as f:
                         await f.write(gen_template.init_content)
 
-                # model init 文件补充
+                # model init file supplement
                 if code_folder.name == 'model':
                     async with aiofiles.open(init_filepath, 'a', encoding='utf-8') as f:
                         await f.write(
@@ -213,21 +213,21 @@ class GenService:
                             f'import {to_pascal(business.table_name)}\n',
                         )
 
-                # 写入代码文件
+                # Write code file
                 async with aiofiles.open(code_filepath, 'w', encoding='utf-8') as f:
                     await f.write(code)
 
     async def download(self, *, pk: int) -> io.BytesIO:
         """
-        下载生成的代码
+        Download generated code
 
-        :param pk: 业务 ID
+        :param pk: Business ID
         :return:
         """
         async with async_db_session() as db:
             business = await gen_business_dao.get(db, pk)
             if not business:
-                raise errors.NotFoundError(msg='业务不存在')
+                raise errors.NotFoundError(msg='Business does not exist')
 
             bio = io.BytesIO()
             with zipfile.ZipFile(bio, 'w') as zf:
@@ -235,7 +235,7 @@ class GenService:
                 for tpl_path, code in tpl_code_map.items():
                     code_filepath = gen_template.get_code_gen_path(tpl_path, business)
 
-                    # 写入 init 文件
+                    # Write init file
                     code_dir = os.path.dirname(code_filepath)
                     init_filepath = os.path.join(code_dir, '__init__.py')
                     if 'model' not in code_filepath.split('/'):
@@ -258,7 +258,7 @@ class GenService:
                         app_init_filepath = os.path.join(os.path.dirname(code_dir), '__init__.py')
                         zf.writestr(app_init_filepath, gen_template.init_content)
 
-                    # 写入代码文件
+                    # Write code file
                     zf.writestr(code_filepath, code)
 
             bio.seek(0)

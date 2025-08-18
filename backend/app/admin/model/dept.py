@@ -32,7 +32,11 @@ class Dept(Base):
 
     # Parent department one-to-many
     parent_id: Mapped[int | None] = mapped_column(
-        BigInteger, ForeignKey('sys_dept.id', ondelete='SET NULL'), default=None, index=True, comment='Parent Department ID'
+        BigInteger,
+        ForeignKey('sys_dept.id', ondelete='SET NULL'),
+        default=None,
+        index=True,
+        comment='Parent Department ID',
     )
     parent: Mapped[Optional['Dept']] = relationship(init=False, back_populates='children', remote_side=[id])
     children: Mapped[Optional[list['Dept']]] = relationship(init=False, back_populates='parent')

@@ -78,6 +78,7 @@ class JwtAuthMiddleware(AuthenticationBackend):
             log.exception(f'JWT authorization exception: {e}')
             raise _AuthenticationError(code=getattr(e, 'code', 500), msg=getattr(e, 'msg', 'Internal Server Error'))
 
-        # Note: This return uses a non-standard pattern, so some standard features will be lost upon successful authentication.
+        # Note: This return uses a non-standard pattern,
+        # so some standard features will be lost upon successful authentication.
         # For the standard return pattern, see: https://www.starlette.io/authentication/
         return AuthCredentials(['authenticated']), user

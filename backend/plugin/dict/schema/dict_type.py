@@ -9,33 +9,33 @@ from backend.common.schema import SchemaBase
 
 
 class DictTypeSchemaBase(SchemaBase):
-    """字典类型基础模型"""
+    """Dictionary Type Base Model"""
 
-    name: str = Field(description='字典名称')
-    code: str = Field(description='字典编码')
-    status: StatusType = Field(description='状态')
-    remark: str | None = Field(None, description='备注')
+    name: str = Field(description='Dictionary Name')
+    code: str = Field(description='Dictionary Code')
+    status: StatusType = Field(description='Status')
+    remark: str | None = Field(None, description='Remarks')
 
 
 class CreateDictTypeParam(DictTypeSchemaBase):
-    """创建字典类型参数"""
+    """Create Dictionary Type Parameters"""
 
 
 class UpdateDictTypeParam(DictTypeSchemaBase):
-    """更新字典类型参数"""
+    """Update Dictionary Type Parameters"""
 
 
 class DeleteDictTypeParam(SchemaBase):
-    """删除字典类型参数"""
+    """Delete Dictionary Type Parameters"""
 
-    pks: list[int] = Field(description='字典类型 ID 列表')
+    pks: list[int] = Field(description='Dictionary Type ID List')
 
 
 class GetDictTypeDetail(DictTypeSchemaBase):
-    """字典类型详情"""
+    """Dictionary Type Details"""
 
     model_config = ConfigDict(from_attributes=True)
 
-    id: int = Field(description='字典类型 ID')
-    created_time: datetime = Field(description='创建时间')
-    updated_time: datetime | None = Field(None, description='更新时间')
+    id: int = Field(description='Dictionary Type ID')
+    created_time: datetime = Field(description='Creation Time')
+    updated_time: datetime | None = Field(None, description='Update Time')

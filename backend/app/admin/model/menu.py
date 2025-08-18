@@ -27,7 +27,9 @@ class Menu(Base):
     path: Mapped[str | None] = mapped_column(String(200), comment='Route Path')
     sort: Mapped[int] = mapped_column(default=0, comment='Sort Order')
     icon: Mapped[str | None] = mapped_column(String(100), default=None, comment='Menu Icon')
-    type: Mapped[int] = mapped_column(default=0, comment='Menu Type (0 Directory 1 Menu 2 Button 3 Embedded 4 External Link)')
+    type: Mapped[int] = mapped_column(
+        default=0, comment='Menu Type (0 Directory 1 Menu 2 Button 3 Embedded 4 External Link)'
+    )
     component: Mapped[str | None] = mapped_column(String(255), default=None, comment='Component Path')
     perms: Mapped[str | None] = mapped_column(String(100), default=None, comment='Permission Identifier')
     status: Mapped[int] = mapped_column(default=1, comment='Menu Status (0 Disabled 1 Enabled)')

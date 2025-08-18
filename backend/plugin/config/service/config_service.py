@@ -14,29 +14,29 @@ from backend.plugin.config.schema.config import (
 
 
 class ConfigService:
-    """参数配置服务类"""
+    """Configuration parameter service class"""
 
     @staticmethod
     async def get(*, pk: int) -> Config:
         """
-        获取参数配置详情
+        Get configuration parameter details
 
-        :param pk: 参数配置 ID
+        :param pk: Configuration parameter ID
         :return:
         """
         async with async_db_session() as db:
             config = await config_dao.get(db, pk)
             if not config:
-                raise errors.NotFoundError(msg='参数配置不存在')
+                raise errors.NotFoundError(msg='Configuration parameter does not exist')
             return config
 
     @staticmethod
     async def get_select(*, name: str | None, type: str | None) -> Select:
         """
-        获取参数配置列表查询条件
+        Get query conditions for configuration parameter list
 
-        :param name: 参数配置名称
-        :param type: 参数配置类型
+        :param name: Configuration parameter name
+        :param type: Configuration parameter type
         :return:
         """
         return await config_dao.get_list(name=name, type=type)
@@ -44,43 +44,43 @@ class ConfigService:
     @staticmethod
     async def create(*, obj: CreateConfigParam) -> None:
         """
-        创建参数配置
+        Create configuration parameter
 
-        :param obj: 参数配置创建参数
+        :param obj: Configuration parameter creation parameters
         :return:
         """
         async with async_db_session.begin() as db:
             config = await config_dao.get_by_key(db, obj.key)
             if config:
-                raise errors.ConflictError(msg=f'参数配置 {obj.key} 已存在')
+                raise errors.ConflictError(msg=f'Configuration parameter {obj.key} already exists')
             await config_dao.create(db, obj)
 
     @staticmethod
     async def update(*, pk: int, obj: UpdateConfigParam) -> int:
         """
-        更新参数配置
+        Update configuration parameter
 
-        :param pk: 参数配置 ID
-        :param obj: 参数配置更新参数
+        :param pk: Configuration parameter ID
+        :param obj: Configuration parameter update parameters
         :return:
         """
         async with async_db_session.begin() as db:
             config = await config_dao.get(db, pk)
             if not config:
-                raise errors.NotFoundError(msg='参数配置不存在')
+                raise errors.NotFoundError(msg='Configuration parameter does not exist')
             if config.key != obj.key:
                 config = await config_dao.get_by_key(db, obj.key)
                 if config:
-                    raise errors.ConflictError(msg=f'参数配置 {obj.key} 已存在')
+                    raise errors.ConflictError(msg=f'Configuration parameter {obj.key} already exists')
             count = await config_dao.update(db, pk, obj)
             return count
 
     @staticmethod
     async def delete(*, pks: list[int]) -> int:
         """
-        批量删除参数配置
+        Batch delete configuration parameters
 
-        :param pks: 参数配置 ID 列表
+        :param pks: List of configuration parameter IDs
         :return:
         """
         async with async_db_session.begin() as db:

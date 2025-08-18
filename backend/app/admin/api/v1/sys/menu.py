@@ -14,7 +14,9 @@ from backend.common.security.rbac import DependsRBAC
 router = APIRouter()
 
 
-@router.get('/sidebar', summary='Get user menu sidebar', description='Adapted for vben admin v5', dependencies=[DependsJwtAuth])
+@router.get(
+    '/sidebar', summary='Get user menu sidebar', description='Adapted for vben admin v5', dependencies=[DependsJwtAuth]
+)
 async def get_user_sidebar(request: Request) -> ResponseSchemaModel[list[dict[str, Any] | None]]:
     menu = await menu_service.get_sidebar(request=request)
     return response_base.success(data=menu)

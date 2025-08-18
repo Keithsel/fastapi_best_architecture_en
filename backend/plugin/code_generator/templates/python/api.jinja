@@ -21,7 +21,7 @@ from backend.database.db import CurrentSession
 router = APIRouter()
 
 
-@router.get('/{pk}', summary='获取{{ doc_comment }}详情', dependencies=[DependsJwtAuth])
+@router.get('/{pk}', summary='Get {{ doc_comment }} detail', dependencies=[DependsJwtAuth])
 async def get_{{ table_name }}(pk: Annotated[int, Path(description='{{ doc_comment }} ID')]) -> ResponseSchemaModel[Get{{ schema_name }}Detail]:
     {{ table_name }} = await {{ table_name }}_service.get(pk=pk)
     return response_base.success(data={{ table_name }})
@@ -29,7 +29,7 @@ async def get_{{ table_name }}(pk: Annotated[int, Path(description='{{ doc_comme
 
 @router.get(
     '',
-    summary='分页获取所有{{ doc_comment }}',
+    summary='Get all {{ doc_comment }} paged',
     dependencies=[
         DependsJwtAuth,
         DependsPagination,
@@ -43,7 +43,7 @@ async def get_{{ table_name }}s_paged(db: CurrentSession) -> ResponseSchemaModel
 
 @router.post(
     '',
-    summary='创建{{ doc_comment }}',
+    summary='Create {{ doc_comment }}',
     dependencies=[
         Depends(RequestPermission('{{ permission }}:add')),
         DependsRBAC,
@@ -56,7 +56,7 @@ async def create_{{ table_name }}(obj: Create{{ schema_name }}Param) -> Response
 
 @router.put(
     '/{pk}',
-    summary='更新{{ doc_comment }}',
+    summary='Update {{ doc_comment }}',
     dependencies=[
         Depends(RequestPermission('{{ permission }}:edit')),
         DependsRBAC,
@@ -71,7 +71,7 @@ async def update_{{ table_name }}(pk: Annotated[int, Path(description='{{ doc_co
 
 @router.delete(
     '',
-    summary='批量删除{{ doc_comment }}',
+    summary='Batch delete {{ doc_comment }}',
     dependencies=[
         Depends(RequestPermission('{{ permission }}:del')),
         DependsRBAC,

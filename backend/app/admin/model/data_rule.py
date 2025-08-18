@@ -21,7 +21,9 @@ class DataRule(Base):
 
     id: Mapped[id_key] = mapped_column(init=False)
     name: Mapped[str] = mapped_column(String(500), unique=True, comment='Name')
-    model: Mapped[str] = mapped_column(String(50), comment='SQLAlchemy model name, corresponds to DATA_PERMISSION_MODELS key')
+    model: Mapped[str] = mapped_column(
+        String(50), comment='SQLAlchemy model name, corresponds to DATA_PERMISSION_MODELS key'
+    )
     column: Mapped[str] = mapped_column(String(20), comment='Model field name')
     operator: Mapped[int] = mapped_column(comment='Operator (0: and, 1: or)')
     expression: Mapped[int] = mapped_column(

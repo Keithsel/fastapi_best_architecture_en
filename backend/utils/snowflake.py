@@ -86,7 +86,9 @@ class Snowflake:
         timestamp = self._current_millis()
 
         if timestamp < self.last_timestamp:
-            raise errors.ServerError(msg=f'System clock moved backwards, refusing to generate ID until {self.last_timestamp}')
+            raise errors.ServerError(
+                msg=f'System clock moved backwards, refusing to generate ID until {self.last_timestamp}'
+            )
 
         if timestamp == self.last_timestamp:
             self.sequence = (self.sequence + 1) & SnowflakeConfig.SEQUENCE_MASK

@@ -8,14 +8,14 @@ from backend.common.model import Base, id_key
 
 
 class Notice(Base):
-    """系统通知公告表"""
+    """System Notice and Announcement Table"""
 
     __tablename__ = 'sys_notice'
 
     id: Mapped[id_key] = mapped_column(init=False)
-    title: Mapped[str] = mapped_column(String(50), comment='标题')
-    type: Mapped[int] = mapped_column(comment='类型（0：通知、1：公告）')
-    author: Mapped[str] = mapped_column(String(16), comment='作者')
-    source: Mapped[str] = mapped_column(String(50), comment='信息来源')
-    status: Mapped[int] = mapped_column(comment='状态（0：隐藏、1：显示）')
-    content: Mapped[str] = mapped_column(LONGTEXT().with_variant(TEXT, 'postgresql'), comment='内容')
+    title: Mapped[str] = mapped_column(String(50), comment='Title')
+    type: Mapped[int] = mapped_column(comment='Type (0: Notice, 1: Announcement)')
+    author: Mapped[str] = mapped_column(String(16), comment='Author')
+    source: Mapped[str] = mapped_column(String(50), comment='Source')
+    status: Mapped[int] = mapped_column(comment='Status (0: Hidden, 1: Visible)')
+    content: Mapped[str] = mapped_column(LONGTEXT().with_variant(TEXT, 'postgresql'), comment='Content')

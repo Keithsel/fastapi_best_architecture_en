@@ -21,7 +21,7 @@ from backend.utils.timezone import timezone
 
 
 class OAuth2Service:
-    """OAuth2 认证服务类"""
+    """OAuth2 authentication service class"""
 
     @staticmethod
     async def create_with_login(
@@ -33,13 +33,13 @@ class OAuth2Service:
         social: UserSocialType,
     ) -> GetLoginToken | None:
         """
-        创建 OAuth2 用户并登录
+        Create OAuth2 user and log in
 
-        :param request: FastAPI 请求对象
-        :param response: FastAPI 响应对象
-        :param background_tasks: FastAPI 后台任务
-        :param user: OAuth2 用户信息
-        :param social: 社交平台类型
+        :param request: FastAPI request object
+        :param response: FastAPI response object
+        :param background_tasks: FastAPI background tasks
+        :param user: OAuth2 user info
+        :param social: Social platform type
         :return:
         """
         async with async_db_session.begin() as db:
@@ -61,16 +61,16 @@ class OAuth2Service:
             user_social = await user_social_dao.get_by_sid(db, str(sid), str(social.value))
             if user_social:
                 sys_user = await user_dao.get(db, user_social.user_id)
-                # 更新用户头像
+                # Update user avatar
                 if not sys_user.avatar and avatar is not None:
                     await user_dao.update_avatar(db, sys_user.id, avatar)
             else:
                 sys_user = None
-                # 检测系统用户是否已存在
+                # Check if system user already exists
                 if email:
-                    sys_user = await user_dao.check_email(db, email)  # 通过邮箱验证绑定保证邮箱真实性
+                    sys_user = await user_dao.check_email(db, email)  # Bind by email to ensure email authenticity
 
-                # 创建系统用户
+                # Create system user
                 if not sys_user:
                     while await user_dao.get_by_username(db, username):
                         username = f'{username}_{text_captcha(5)}'
@@ -85,11 +85,11 @@ class OAuth2Service:
                     await db.flush()
                     sys_user = await user_dao.get_by_username(db, username)
 
-                # 绑定社交账号
+                # Bind social account
                 new_user_social = CreateUserSocialParam(sid=str(sid), source=social.value, user_id=sys_user.id)
                 await user_social_dao.create(db, new_user_social)
 
-            # 创建 token
+            # Create token
             access_token = await jwt.create_access_token(
                 sys_user.id,
                 sys_user.is_multi_login,

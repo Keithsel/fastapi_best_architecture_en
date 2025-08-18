@@ -12,25 +12,25 @@ from backend.plugin.code_generator.utils.type_conversion import sql_type_to_pyda
 
 
 class GenColumnService:
-    """代码生成模型列服务类"""
+    """Code Generation Model Column Service Class"""
 
     @staticmethod
     async def get(*, pk: int) -> GenColumn:
         """
-        获取指定 ID 的模型列
+        Get model column by specified ID
 
-        :param pk: 模型列 ID
+        :param pk: Model column ID
         :return:
         """
         async with async_db_session() as db:
             column = await gen_column_dao.get(db, pk)
             if not column:
-                raise errors.NotFoundError(msg='代码生成模型列不存在')
+                raise errors.NotFoundError(msg='Code generation model column does not exist')
             return column
 
     @staticmethod
     async def get_types() -> list[str]:
-        """获取所有 MySQL 列类型"""
+        """Get all MySQL column types"""
         types = GenMySQLColumnType.get_member_keys()
         types.sort()
         return types
@@ -38,9 +38,9 @@ class GenColumnService:
     @staticmethod
     async def get_columns(*, business_id: int) -> Sequence[GenColumn]:
         """
-        获取指定业务的所有模型列
+        Get all model columns for the specified business
 
-        :param business_id: 业务 ID
+        :param business_id: Business ID
         :return:
         """
         async with async_db_session() as db:
@@ -49,15 +49,15 @@ class GenColumnService:
     @staticmethod
     async def create(*, obj: CreateGenColumnParam) -> None:
         """
-        创建模型列
+        Create model column
 
-        :param obj: 创建模型列参数
+        :param obj: Create model column parameters
         :return:
         """
         async with async_db_session.begin() as db:
             gen_columns = await gen_column_dao.get_all_by_business(db, obj.gen_business_id)
             if obj.name in [gen_column.name for gen_column in gen_columns]:
-                raise errors.ForbiddenError(msg='模型列已存在')
+                raise errors.ForbiddenError(msg='Model column already exists')
 
             pd_type = sql_type_to_pydantic(obj.type)
             await gen_column_dao.create(db, obj, pd_type=pd_type)
@@ -65,10 +65,10 @@ class GenColumnService:
     @staticmethod
     async def update(*, pk: int, obj: UpdateGenColumnParam) -> int:
         """
-        更新模型列
+        Update model column
 
-        :param pk: 模型列 ID
-        :param obj: 更新模型列参数
+        :param pk: Model column ID
+        :param obj: Update model column parameters
         :return:
         """
         async with async_db_session.begin() as db:
@@ -76,7 +76,7 @@ class GenColumnService:
             if obj.name != column.name:
                 gen_columns = await gen_column_dao.get_all_by_business(db, obj.gen_business_id)
                 if obj.name in [gen_column.name for gen_column in gen_columns]:
-                    raise errors.ConflictError(msg='模型列名已存在')
+                    raise errors.ConflictError(msg='Model column name already exists')
 
             pd_type = sql_type_to_pydantic(obj.type)
             return await gen_column_dao.update(db, pk, obj, pd_type=pd_type)
@@ -84,9 +84,9 @@ class GenColumnService:
     @staticmethod
     async def delete(*, pk: int) -> int:
         """
-        删除模型列
+        Delete model column
 
-        :param pk: 模型列 ID
+        :param pk: Model column ID
         :return:
         """
         async with async_db_session.begin() as db:
