@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 import time
 
-from asyncio import create_task
+from asyncio import Queue
 from typing import Any
 
 from asgiref.sync import sync_to_async
@@ -15,6 +15,7 @@ from backend.app.admin.schema.opera_log import CreateOperaLogParam
 from backend.app.admin.service.opera_log_service import opera_log_service
 from backend.common.enums import OperaLogCipherType, StatusType
 from backend.common.log import log
+from backend.common.queue import batch_dequeue
 from backend.core.conf import settings
 from backend.utils.encrypt import AESCipher, ItsDCipher, Md5Cipher
 from backend.utils.trace_id import get_request_trace_id
@@ -22,6 +23,8 @@ from backend.utils.trace_id import get_request_trace_id
 
 class OperaLogMiddleware(BaseHTTPMiddleware):
     """Operation log middleware"""
+
+    opera_log_queue: Queue = Queue(maxsize=100000)
 
     async def dispatch(self, request: Request, call_next: Any) -> Response:
         """
@@ -39,7 +42,6 @@ class OperaLogMiddleware(BaseHTTPMiddleware):
         else:
             method = request.method
             args = await self.get_request_args(request)
-            args = await self.desensitization(args)
 
             # Execute request
             elapsed = 0.0
@@ -108,7 +110,7 @@ class OperaLogMiddleware(BaseHTTPMiddleware):
                 cost_time=elapsed,  # May have slight difference with log (can be ignored)
                 opera_time=request.state.start_time,
             )
-            create_task(opera_log_service.create(obj=opera_log_in))  # noqa: ignore
+            await self.opera_log_queue.put(opera_log_in)
 
             # Error throw
             if error:
@@ -116,8 +118,7 @@ class OperaLogMiddleware(BaseHTTPMiddleware):
 
         return response
 
-    @staticmethod
-    async def get_request_args(request: Request) -> dict[str, Any]:
+    async def get_request_args(self, request: Request) -> dict[str, Any] | None:
         """
         Get request parameters
 
@@ -125,15 +126,22 @@ class OperaLogMiddleware(BaseHTTPMiddleware):
         :return:
         """
         args = {}
+
+        # Query parameters
         query_params = dict(request.query_params)
         if query_params:
-            args['query_params'] = query_params
+            args['query_params'] = await self.desensitization(query_params)
+
+        # Path parameters
         path_params = request.path_params
         if path_params:
-            args['path_params'] = path_params
+            args['path_params'] = await self.desensitization(path_params)
+
         # Tip: .body() must be obtained before .form()
         # https://github.com/encode/starlette/discussions/1933
         content_type = request.headers.get('Content-Type', '').split(';')
+
+        # Request body
         body_data = await request.body()
         if body_data:
             # Note: Non-json data uses 'data' as the key by default
@@ -142,9 +150,11 @@ class OperaLogMiddleware(BaseHTTPMiddleware):
             else:
                 json_data = await request.json()
                 if isinstance(json_data, dict):
-                    args['json'] = json_data
+                    args['json'] = await self.desensitization(json_data)
                 else:
                     args['data'] = str(body_data)
+
+        # Form parameters
         form_data = await request.form()
         if len(form_data) > 0:
             for k, v in form_data.items():
@@ -153,39 +163,51 @@ class OperaLogMiddleware(BaseHTTPMiddleware):
                 else:
                     form_data = {k: v}
             if 'multipart/form-data' not in content_type:
-                args['x-www-form-urlencoded'] = form_data
+                args['x-www-form-urlencoded'] = await self.desensitization(form_data)
             else:
-                args['form-data'] = form_data
+                args['form-data'] = await self.desensitization(form_data)
 
-        return args
+        return None if not args else args
 
     @staticmethod
     @sync_to_async
-    def desensitization(args: dict[str, Any]) -> dict[str, Any] | None:
+    def desensitization(args: dict[str, Any]) -> dict[str, Any]:
         """
         Desensitization processing
 
         :param args: Parameter dictionary to be desensitized
         :return:
         """
-        if not args:
-            return None
-
-        encrypt_type = settings.OPERA_LOG_ENCRYPT_TYPE
-        encrypt_key_include = settings.OPERA_LOG_ENCRYPT_KEY_INCLUDE
-        encrypt_secret_key = settings.OPERA_LOG_ENCRYPT_SECRET_KEY
-
         for key, value in args.items():
-            if key in encrypt_key_include:
-                match encrypt_type:
+            if key in settings.OPERA_LOG_ENCRYPT_KEY_INCLUDE:
+                match settings.OPERA_LOG_ENCRYPT_TYPE:
                     case OperaLogCipherType.aes:
-                        args[key] = (AESCipher(encrypt_secret_key).encrypt(value)).hex()
+                        args[key] = (AESCipher(settings.OPERA_LOG_ENCRYPT_SECRET_KEY).encrypt(value)).hex()
                     case OperaLogCipherType.md5:
                         args[key] = Md5Cipher.encrypt(value)
                     case OperaLogCipherType.itsdangerous:
-                        args[key] = ItsDCipher(encrypt_secret_key).encrypt(value)
+                        args[key] = ItsDCipher(settings.OPERA_LOG_ENCRYPT_SECRET_KEY).encrypt(value)
                     case OperaLogCipherType.plan:
                         pass
                     case _:
                         args[key] = '******'
+
         return args
+
+    @classmethod
+    async def consumer(cls) -> None:
+        """Operation log consumer"""
+        while True:
+            logs = await batch_dequeue(
+                cls.opera_log_queue,
+                max_items=settings.OPERA_LOG_QUEUE_BATCH_CONSUME_SIZE,
+                timeout=settings.OPERA_LOG_QUEUE_TIMEOUT,
+            )
+            if logs:
+                try:
+                    if settings.DATABASE_ECHO:
+                        log.info('Automatically executing [operation log batch creation] task...')
+                    await opera_log_service.bulk_create(objs=logs)
+                finally:
+                    if not cls.opera_log_queue.empty():
+                        cls.opera_log_queue.task_done()

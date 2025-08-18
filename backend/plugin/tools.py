@@ -112,7 +112,9 @@ def load_plugin_config(plugin: str) -> dict[str, Any]:
     """
     toml_path = os.path.join(PLUGIN_DIR, plugin, 'plugin.toml')
     if not os.path.exists(toml_path):
-        raise PluginInjectError(f'Plugin {plugin} is missing plugin.toml configuration file, please check if the plugin is valid')
+        raise PluginInjectError(
+            f'Plugin {plugin} is missing plugin.toml configuration file, please check if the plugin is valid'
+        )
 
     with open(toml_path, 'r', encoding='utf-8') as f:
         return rtoml.load(f)
@@ -128,12 +130,11 @@ def parse_plugin_config() -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
 
     # Use independent singleton to avoid conflict with main thread
     current_redis_client = RedisCli()
-    run_await(current_redis_client.open)()
 
-    run_await(current_redis_client.delete_prefix)(f'{settings.PLUGIN_REDIS_PREFIX}:info', exclude=plugins)
-    plugin_status = run_await(current_redis_client.hgetall)(f'{settings.PLUGIN_REDIS_PREFIX}:status')
-    if not plugin_status:
-        plugin_status = {}
+    # Clean up unknown plugin information
+    run_await(current_redis_client.delete_prefix)(
+        settings.PLUGIN_REDIS_PREFIX, exclude=[f'{settings.PLUGIN_REDIS_PREFIX}:{key}' for key in plugins]
+    )
 
     for plugin in plugins:
         data = load_plugin_config(plugin)
@@ -145,35 +146,49 @@ def parse_plugin_config() -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
         required_fields = ['summary', 'version', 'description', 'author']
         missing_fields = [field for field in required_fields if field not in plugin_info]
         if missing_fields:
-            raise PluginConfigError(f'Plugin {plugin} configuration file is missing required fields: {", ".join(missing_fields)}')
+            raise PluginConfigError(
+                f'Plugin {plugin} configuration file is missing required fields: {", ".join(missing_fields)}'
+            )
 
         if data.get('api'):
             # TODO: Remove deprecated include config
             include = data.get('app', {}).get('include')
             if include:
                 warnings.warn(
-                    f'Plugin {plugin} config app.include will be deprecated in future versions, please update config to app.extend, details: https://fastapi-practices.github.io/fastapi_best_architecture_docs/plugin/dev.html#%E6%8F%92%E4%BB%B6%E9%85%8D%E7%BD%AE',
+                    (
+                        f'Plugin {plugin} config app.include will be deprecated in future versions, '
+                        'please update config to app.extend, details: '
+                        'https://fastapi-practices.github.io/fastapi_best_architecture_docs/'
+                        'plugin/dev.html#%E6%8F%92%E4%BB%B6%E9%85%8D%E7%BD%AE'
+                    ),
                     FutureWarning,
                 )
             if not include and not data.get('app', {}).get('extend'):
-                raise PluginConfigError(f'Extension-level plugin {plugin} configuration file is missing app.extend config')
+                raise PluginConfigError(
+                    f'Extension-level plugin {plugin} configuration file is missing app.extend config'
+                )
             extend_plugins.append(data)
         else:
             if not data.get('app', {}).get('router'):
-                raise PluginConfigError(f'Application-level plugin {plugin} configuration file is missing app.router config')
+                raise PluginConfigError(
+                    f'Application-level plugin {plugin} configuration file is missing app.router config'
+                )
             app_plugins.append(data)
 
-        # Supplement plugin info
-        data['plugin']['enable'] = plugin_status.setdefault(plugin, str(StatusType.enable.value))
+        # Supplement plugin information
+        plugin_cache_info = run_await(current_redis_client.get)(f'{settings.PLUGIN_REDIS_PREFIX}:{plugin}')
+        if plugin_cache_info:
+            data['plugin']['enable'] = json.loads(plugin_cache_info)['plugin']['enable']
+        else:
+            data['plugin']['enable'] = str(StatusType.enable.value)
         data['plugin']['name'] = plugin
 
-        # Cache plugin info
+        # Cache latest plugin information
         run_await(current_redis_client.set)(
-            f'{settings.PLUGIN_REDIS_PREFIX}:info:{plugin}', json.dumps(data, ensure_ascii=False)
+            f'{settings.PLUGIN_REDIS_PREFIX}:{plugin}', json.dumps(data, ensure_ascii=False)
         )
 
-    # Cache plugin status
-    run_await(current_redis_client.hset)(f'{settings.PLUGIN_REDIS_PREFIX}:status', mapping=plugin_status)
+    # Reset plugin change status
     run_await(current_redis_client.delete)(f'{settings.PLUGIN_REDIS_PREFIX}:changed')
 
     return extend_plugins, app_plugins
@@ -211,7 +226,10 @@ def inject_extend_router(plugin: dict[str, Any]) -> None:
                 plugin_router = getattr(module, 'router', None)
                 if not plugin_router:
                     warnings.warn(
-                        f'Extension-level plugin {plugin_name} module {module_path} does not have a valid router, please check if plugin files are complete',
+                        (
+                            f'Extension-level plugin {plugin_name} module {module_path} does not have a valid router, '
+                            'please check if plugin files are complete'
+                        ),
                         FutureWarning,
                     )
                     continue
@@ -226,7 +244,8 @@ def inject_extend_router(plugin: dict[str, Any]) -> None:
 
                 if not target_router or not isinstance(target_router, APIRouter):
                     raise PluginInjectError(
-                        f'Extension-level plugin {plugin_name} module {module_path} does not have a valid router, please check if plugin files are complete'
+                        f'Extension-level plugin {plugin_name} module {module_path} does not have a valid router, '
+                        'please check if plugin files are complete'
                     )
 
                 # Inject plugin router into target router
@@ -237,7 +256,9 @@ def inject_extend_router(plugin: dict[str, Any]) -> None:
                     dependencies=[Depends(PluginStatusChecker(plugin_name))],
                 )
             except Exception as e:
-                raise PluginInjectError(f'Extension-level plugin {plugin_name} router injection failed: {str(e)}') from e
+                raise PluginInjectError(
+                    f'Extension-level plugin {plugin_name} router injection failed: {str(e)}'
+                ) from e
 
 
 def inject_app_router(plugin: dict[str, Any], target_router: APIRouter) -> None:
@@ -254,13 +275,16 @@ def inject_app_router(plugin: dict[str, Any], target_router: APIRouter) -> None:
         module = import_module_cached(module_path)
         routers = plugin['app']['router']
         if not routers or not isinstance(routers, list):
-            raise PluginConfigError(f'Application-level plugin {plugin_name} configuration file has errors, please check')
+            raise PluginConfigError(
+                f'Application-level plugin {plugin_name} configuration file has errors, please check'
+            )
 
         for router in routers:
             plugin_router = getattr(module, router, None)
             if not plugin_router or not isinstance(plugin_router, APIRouter):
                 raise PluginInjectError(
-                    f'Application-level plugin {plugin_name} module {module_path} does not have a valid router, please check if plugin files are complete'
+                    f'Application-level plugin {plugin_name} module {module_path} does not have a valid router, '
+                    'please check if plugin files are complete'
                 )
 
             # Inject plugin router into target router
@@ -276,7 +300,8 @@ def build_final_router() -> APIRouter:
     for plugin in extend_plugins:
         inject_extend_router(plugin)
 
-    # Main router, must be imported after extension-level plugin router injection and before application-level plugin router injection
+    # Main router, must be imported after extension-level plugin router injection and before
+    # application-level plugin router injection
     from backend.app.router import router as main_router
 
     for plugin in app_plugins:
@@ -380,14 +405,10 @@ class PluginStatusChecker:
         :param request: FastAPI request object
         :return:
         """
-        plugin_status = await redis_client.hgetall(f'{settings.PLUGIN_REDIS_PREFIX}:status')
-        if not plugin_status:
+        plugin_info = await redis_client.get(f'{settings.PLUGIN_REDIS_PREFIX}:{self.plugin}')
+        if not plugin_info:
             log.error('Plugin status not initialized or lost, need to restart service to auto repair')
             raise PluginInjectError('Plugin status not initialized or lost, please contact system administrator')
 
-        if self.plugin not in plugin_status:
-            log.error(f'Plugin {self.plugin} status not initialized or lost, need to restart service to auto repair')
-            raise PluginInjectError(f'Plugin {self.plugin} status not initialized or lost, please contact system administrator')
-        if not int(plugin_status.get(self.plugin)):
+        if not int(json.loads(plugin_info)['plugin']['enable']):
             raise errors.ServerError(msg=f'Plugin {self.plugin} is not enabled, please contact system administrator')
-

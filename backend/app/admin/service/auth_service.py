@@ -13,6 +13,7 @@ from backend.app.admin.schema.user import AuthLoginParam
 from backend.app.admin.service.login_log_service import login_log_service
 from backend.common.enums import LoginLogStatusType
 from backend.common.exception import errors
+from backend.common.i18n import t
 from backend.common.log import log
 from backend.common.response.response_code import CustomErrorCode
 from backend.common.security.jwt import (
@@ -33,7 +34,7 @@ class AuthService:
     """Authentication service class"""
 
     @staticmethod
-    async def user_verify(db: AsyncSession, username: str, password: str | None) -> User:
+    async def user_verify(db: AsyncSession, username: str, password: str) -> User:
         """
         Verify username and password
 
@@ -93,7 +94,7 @@ class AuthService:
                 user = await self.user_verify(db, obj.username, obj.password)
                 captcha_code = await redis_client.get(f'{settings.CAPTCHA_LOGIN_REDIS_PREFIX}:{request.state.ip}')
                 if not captcha_code:
-                    raise errors.RequestError(msg='Captcha expired, please get it again')
+                    raise errors.RequestError(msg=t('error.captcha.expired'))
                 if captcha_code.lower() != obj.captcha.lower():
                     raise errors.CustomError(error=CustomErrorCode.CAPTCHA_ERROR)
                 await redis_client.delete(f'{settings.CAPTCHA_LOGIN_REDIS_PREFIX}:{request.state.ip}')
@@ -137,7 +138,7 @@ class AuthService:
                         msg=e.msg,
                     ),
                 )
-                raise errors.RequestError(msg=e.msg, background=task)
+                raise errors.RequestError(code=e.code, msg=e.msg, background=task)
             except Exception as e:
                 log.error(f'Login error: {e}')
                 raise e
@@ -151,7 +152,7 @@ class AuthService:
                         username=obj.username,
                         login_time=timezone.now(),
                         status=LoginLogStatusType.success.value,
-                        msg='Login successful',
+                        msg=t('success.login.success'),
                     ),
                 )
                 data = GetLoginToken(
@@ -207,7 +208,9 @@ class AuthService:
                 raise errors.AuthorizationError(msg='User has been locked, please contact the system administrator')
             if not user.is_multi_login:
                 if await redis_client.keys(match=f'{settings.TOKEN_REDIS_PREFIX}:{user.id}:*'):
-                    raise errors.ForbiddenError(msg='This user has logged in elsewhere, please log in again and change your password promptly')
+                    raise errors.ForbiddenError(
+                        msg='This user has logged in elsewhere, please log in again and change your password promptly'
+                    )
             new_token = await create_new_token(
                 refresh_token,
                 token_payload.session_uuid,

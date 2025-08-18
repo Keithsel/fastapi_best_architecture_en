@@ -25,9 +25,11 @@ def get_app_models():
         try:
             module_path = f'backend.app.{app}.model'
             module = import_module_cached(module_path)
-        except Exception as e:
+        except ModuleNotFoundError as e:
             log.warning(f'Module {app} does not contain model configuration: {e}')
             continue
+        except Exception as e:
+            raise e
 
         for name, obj in inspect.getmembers(module):
             if inspect.isclass(obj):

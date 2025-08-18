@@ -119,16 +119,3 @@ async def delete_task_scheduler(pk: Annotated[int, Path(description='Task Schedu
 async def execute_task(pk: Annotated[int, Path(description='Task Scheduler ID')]) -> ResponseModel:
     await task_scheduler_service.execute(pk=pk)
     return response_base.success()
-
-
-@router.delete(
-    '/{task_id}/cancel',
-    summary='Revoke task',
-    dependencies=[
-        Depends(RequestPermission('sys:task:revoke')),
-        DependsRBAC,
-    ],
-)
-async def revoke_task(task_id: Annotated[str, Path(description='Task UUID')]) -> ResponseModel:
-    await task_scheduler_service.revoke(task_id=task_id)
-    return response_base.success()

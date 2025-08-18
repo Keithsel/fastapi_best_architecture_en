@@ -23,6 +23,9 @@ async def rbac_verify(request: Request, _token: str = DependsJwtAuth) -> None:
     # API authentication whitelist
     if path in settings.TOKEN_REQUEST_PATH_EXCLUDE:
         return
+    for pattern in settings.TOKEN_REQUEST_PATH_EXCLUDE_PATTERN:
+        if pattern.match(path):
+            return
 
     # Force JWT authorization status check
     if not request.auth.scopes:

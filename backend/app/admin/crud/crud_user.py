@@ -89,10 +89,8 @@ class CRUDUser(CRUDPlus[User]):
         :param obj: Register user parameters
         :return:
         """
-        salt = bcrypt.gensalt()
-        obj.password = get_hash_password(obj.password, salt)
         dict_obj = obj.model_dump()
-        dict_obj.update({'is_staff': True, 'salt': salt})
+        dict_obj.update({'is_staff': True, 'salt': None})
         new_user = self.model(**dict_obj)
 
         stmt = select(Role)
@@ -119,6 +117,17 @@ class CRUDUser(CRUDPlus[User]):
         input_user.roles = roles.scalars().all()
         return count
 
+    async def update_nickname(self, db: AsyncSession, user_id: int, nickname: str) -> int:
+        """
+        Update user nickname
+
+        :param db: Database session
+        :param user_id: User ID
+        :param nickname: User nickname
+        :return:
+        """
+        return await self.update_model(db, user_id, {'nickname': nickname})
+
     async def update_avatar(self, db: AsyncSession, user_id: int, avatar: str) -> int:
         """
         Update user avatar
@@ -129,6 +138,17 @@ class CRUDUser(CRUDPlus[User]):
         :return:
         """
         return await self.update_model(db, user_id, {'avatar': avatar})
+
+    async def update_email(self, db: AsyncSession, user_id: int, email: str) -> int:
+        """
+        Update user email
+
+        :param db: Database session
+        :param user_id: User ID
+        :param email: Email
+        :return:
+        """
+        return await self.update_model(db, user_id, {'email': email})
 
     async def delete(self, db: AsyncSession, user_id: int) -> int:
         """
@@ -150,16 +170,18 @@ class CRUDUser(CRUDPlus[User]):
         """
         return await self.select_model_by_column(db, email=email)
 
-    async def reset_password(self, db: AsyncSession, pk: int, new_pwd: str) -> int:
+    async def reset_password(self, db: AsyncSession, pk: int, password: str) -> int:
         """
         Reset user password
 
         :param db: Database session
         :param pk: User ID
-        :param new_pwd: New password (already encrypted)
+        :param password: New password
         :return:
         """
-        return await self.update_model(db, pk, {'password': new_pwd})
+        salt = bcrypt.gensalt()
+        new_pwd = get_hash_password(password, salt)
+        return await self.update_model(db, pk, {'password': new_pwd, 'salt': salt})
 
     async def get_list(self, dept: int | None, username: str | None, phone: str | None, status: int | None) -> Select:
         """

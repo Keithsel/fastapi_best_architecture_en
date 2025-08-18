@@ -27,12 +27,14 @@ class User(Base):
     uuid: Mapped[str] = mapped_column(String(50), init=False, default_factory=uuid4_str, unique=True)
     username: Mapped[str] = mapped_column(String(20), unique=True, index=True, comment='Username')
     nickname: Mapped[str] = mapped_column(String(20), comment='Nickname')
-    password: Mapped[str] = mapped_column(String(255), comment='Password')
-    salt: Mapped[bytes] = mapped_column(VARBINARY(255).with_variant(BYTEA(255), 'postgresql'), comment='Salt')
+    password: Mapped[str | None] = mapped_column(String(255), comment='Password')
+    salt: Mapped[bytes | None] = mapped_column(
+        VARBINARY(255).with_variant(BYTEA(255), 'postgresql'), comment='Encryption Salt'
+    )
     email: Mapped[str | None] = mapped_column(String(50), default=None, unique=True, index=True, comment='Email')
     phone: Mapped[str | None] = mapped_column(String(11), default=None, comment='Phone Number')
     avatar: Mapped[str | None] = mapped_column(String(255), default=None, comment='Avatar')
-    status: Mapped[int] = mapped_column(default=1, index=True, comment='Account Status (0 Disabled 1 Active)')
+    status: Mapped[int] = mapped_column(default=1, index=True, comment='User Account Status (0 Disabled 1 Active)')
     is_superuser: Mapped[bool] = mapped_column(
         Boolean().with_variant(INTEGER, 'postgresql'), default=False, comment='Superuser (0 No 1 Yes)'
     )

@@ -75,7 +75,7 @@ async def get_db() -> AsyncGenerator[AsyncSession, None]:
         yield session
 
 
-async def create_table() -> None:
+async def create_tables() -> None:
     """Create database tables"""
     async with async_engine.begin() as coon:
         await coon.run_sync(MappedBase.metadata.create_all)
@@ -86,7 +86,11 @@ def uuid4_str() -> str:
     return str(uuid4())
 
 
+# SQLAlchemy database connection
 SQLALCHEMY_DATABASE_URL = create_database_url()
+
+# SQLAlchemy async engine and session
 async_engine, async_db_session = create_async_engine_and_session(SQLALCHEMY_DATABASE_URL)
+
 # Session Annotated
 CurrentSession = Annotated[AsyncSession, Depends(get_db)]

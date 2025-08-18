@@ -4,6 +4,8 @@ import dataclasses
 
 from enum import Enum
 
+from backend.common.i18n import t
+
 
 class CustomCodeBase(Enum):
     """Custom status code base class"""
@@ -16,21 +18,22 @@ class CustomCodeBase(Enum):
     @property
     def msg(self) -> str:
         """Get status code message"""
-        return self.value[1]
+        message = self.value[1]
+        return t(message)
 
 
 class CustomResponseCode(CustomCodeBase):
     """Custom response status codes"""
 
-    HTTP_200 = (200, 'Request successful')
-    HTTP_400 = (400, 'Bad request')
+    HTTP_200 = (200, 'response.success')
+    HTTP_400 = (400, 'response.error')
     HTTP_500 = (500, 'Internal server error')
 
 
 class CustomErrorCode(CustomCodeBase):
     """Custom error status codes"""
 
-    CAPTCHA_ERROR = (40001, 'Captcha error')
+    CAPTCHA_ERROR = (40001, 'error.captcha.error')
 
 
 @dataclasses.dataclass
@@ -141,4 +144,3 @@ class StandardResponseCode:
     WS_1015 = 1015  # TLS_HANDSHAKE
     WS_3000 = 3000  # UNAUTHORIZED
     WS_3003 = 3003  # FORBIDDEN
-

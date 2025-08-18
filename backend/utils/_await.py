@@ -1,17 +1,16 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 import asyncio
 import atexit
 import threading
 import weakref
 
-from typing import Awaitable, Callable, TypeVar
+from functools import wraps
+from typing import Any, Awaitable, Callable, Coroutine, TypeVar
 
 T = TypeVar('T')
 
 
 class _TaskRunner:
-    """A task runner that runs an asyncio event loop on a background thread."""
+    """Task runner that runs asyncio event loop in a background thread"""
 
     def __init__(self):
         self.__loop: asyncio.AbstractEventLoop | None = None
@@ -20,43 +19,50 @@ class _TaskRunner:
         atexit.register(self.close)
 
     def close(self):
-        """Close the event loop"""
+        """Close the event loop and clean up"""
         if self.__loop:
             self.__loop.stop()
+            self.__loop = None
+        if self.__thread:
+            self.__thread.join()
+            self.__thread = None
+        name = f'TaskRunner-{threading.get_ident()}'
+        _runner_map.pop(name, None)
 
     def _target(self):
-        """Background thread target"""
-        loop = self.__loop
+        """Target function for the background thread"""
         try:
-            loop.run_forever()
+            self.__loop.run_forever()
         finally:
-            loop.close()
+            self.__loop.close()
 
-    def run(self, coro):
-        """Synchronously run a coroutine on the background thread"""
+    def run(self, coro: Awaitable[T]) -> T:
+        """Run coroutine on the background event loop and return its result"""
         with self.__lock:
-            name = f'{threading.current_thread().name} - runner'
+            name = f'TaskRunner-{threading.get_ident()}'
             if self.__loop is None:
                 self.__loop = asyncio.new_event_loop()
                 self.__thread = threading.Thread(target=self._target, daemon=True, name=name)
                 self.__thread.start()
-        fut = asyncio.run_coroutine_threadsafe(coro, self.__loop)
-        return fut.result(None)
+            future = asyncio.run_coroutine_threadsafe(coro, self.__loop)
+            return future.result()
 
 
 _runner_map = weakref.WeakValueDictionary()
 
 
-def run_await(coro: Callable[..., Awaitable[T]]) -> Callable[..., T]:
-    """Wrap a coroutine in a function that blocks until it finishes"""
+def run_await(coro: Callable[..., Awaitable[T]] | Callable[..., Coroutine[Any, Any, T]]) -> Callable[..., T]:
+    """Wrap a coroutine in a function that runs on a background event loop until it completes"""
 
+    @wraps(coro)
     def wrapped(*args, **kwargs):
-        name = threading.current_thread().name
         inner = coro(*args, **kwargs)
+        if not asyncio.iscoroutine(inner) and not asyncio.isfuture(inner):
+            raise TypeError(f'Expected coroutine, got {type(inner)}')
         try:
-            # If an event loop is running in this thread,
-            # use the task runner
+            # If event loop is running, use task runner
             asyncio.get_running_loop()
+            name = f'TaskRunner-{threading.get_ident()}'
             if name not in _runner_map:
                 _runner_map[name] = _TaskRunner()
             return _runner_map[name].run(inner)

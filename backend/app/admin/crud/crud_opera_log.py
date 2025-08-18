@@ -37,17 +37,27 @@ class CRUDOperaLogDao(CRUDPlus[OperaLog]):
         Create operation log
 
         :param db: Database session
-        :param obj: Create operation log parameters
+        :param obj: Operation log creation parameters
         :return:
         """
         await self.create_model(db, obj)
+
+    async def bulk_create(self, db: AsyncSession, objs: list[CreateOperaLogParam]) -> None:
+        """
+        Bulk create operation logs
+
+        :param db: Database session
+        :param objs: List of operation log creation parameters
+        :return:
+        """
+        await self.create_models(db, objs)
 
     async def delete(self, db: AsyncSession, pks: list[int]) -> int:
         """
         Batch delete operation logs
 
         :param db: Database session
-        :param pks: Operation log ID list
+        :param pks: List of operation log IDs
         :return:
         """
         return await self.delete_model_by_column(db, allow_multiple=True, id__in=pks)

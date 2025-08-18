@@ -13,7 +13,8 @@ from backend.core.path_conf import BASE_PATH
 
 def find_task_packages():
     packages = []
-    for root, dirs, files in os.walk(os.path.join(BASE_PATH, 'app', 'task', 'tasks')):
+    task_dir = os.path.join(BASE_PATH, 'app', 'task', 'tasks')
+    for root, dirs, files in os.walk(task_dir):
         if 'tasks.py' in files:
             package = root.replace(str(BASE_PATH.parent) + os.path.sep, '').replace(os.path.sep, '.')
             packages.append(package)
@@ -23,7 +24,7 @@ def find_task_packages():
 def init_celery() -> celery.Celery:
     """Initialize Celery application"""
 
-    # TODO: Update this work if celery version >= 6.0.0
+    # TODO: Update this if celery version >= 6.0.0
     # https://github.com/fastapi-practices/fastapi_best_architecture/issues/321
     # https://github.com/celery/celery/issues/7874
     celery.app.trace.build_tracer = celery_aio_pool.build_async_tracer
@@ -43,7 +44,8 @@ def init_celery() -> celery.Celery:
             'group': OVERWRITE_CELERY_RESULT_GROUP_TABLE_NAME,
         },
         result_extended=True,
-        # result_expires=0,  # Task result auto-cleanup, 0 or None means no cleanup
+        # result_expires=0,  # Clean up task results, default is every day at 4 AM, 0 or None means do not clean up
+        # beat_sync_every=1,  # Save task status cycle, default is 3 * 60 seconds
         beat_schedule=LOCAL_BEAT_SCHEDULE,
         beat_scheduler='backend.app.task.utils.schedulers:DatabaseScheduler',
         task_cls='backend.app.task.tasks.base:TaskBase',
@@ -53,7 +55,8 @@ def init_celery() -> celery.Celery:
     )
 
     # Automatically discover tasks
-    app.autodiscover_tasks(find_task_packages())
+    packages = find_task_packages()
+    app.autodiscover_tasks(packages)
 
     return app
 

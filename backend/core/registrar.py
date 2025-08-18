@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 import os
 
+from asyncio import create_task
 from contextlib import asynccontextmanager
 from typing import AsyncGenerator
 
@@ -18,9 +19,10 @@ from backend.common.exception.exception_handler import register_exception
 from backend.common.log import set_custom_logfile, setup_logging
 from backend.core.conf import settings
 from backend.core.path_conf import STATIC_DIR, UPLOAD_DIR
-from backend.database.db import create_table
+from backend.database.db import create_tables
 from backend.database.redis import redis_client
 from backend.middleware.access_middleware import AccessMiddleware
+from backend.middleware.i18n_middleware import I18nMiddleware
 from backend.middleware.jwt_auth_middleware import JwtAuthMiddleware
 from backend.middleware.opera_log_middleware import OperaLogMiddleware
 from backend.middleware.state_middleware import StateMiddleware
@@ -40,7 +42,11 @@ async def register_init(app: FastAPI) -> AsyncGenerator[None, None]:
     :return:
     """
     # Create database tables
-    await create_table()
+    await create_tables()
+
+    # Initialize redis
+    await redis_client.open()
+
     # Initialize limiter
     await FastAPILimiter.init(
         redis=redis_client,
@@ -48,12 +54,13 @@ async def register_init(app: FastAPI) -> AsyncGenerator[None, None]:
         http_callback=http_limit_callback,
     )
 
+    # Create operation log task
+    create_task(OperaLogMiddleware.consumer())
+
     yield
 
     # Close redis connection
-    await redis_client.close()
-    # Close limiter
-    await FastAPILimiter.close()
+    await redis_client.aclose()
 
 
 def register_app() -> FastAPI:
@@ -111,18 +118,21 @@ def register_middleware(app: FastAPI) -> None:
     :param app: FastAPI application instance
     :return:
     """
-    # Opera log
+    # Operation log
     app.add_middleware(OperaLogMiddleware)
 
     # State
     app.add_middleware(StateMiddleware)
 
-    # JWT auth
+    # JWT authentication
     app.add_middleware(
         AuthenticationMiddleware,
         backend=JwtAuthMiddleware(),
         on_error=JwtAuthMiddleware.auth_exception_handler,
     )
+
+    # Internationalization
+    app.add_middleware(I18nMiddleware)
 
     # CORS
     if settings.MIDDLEWARE_CORS:

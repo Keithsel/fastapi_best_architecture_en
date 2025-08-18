@@ -3,7 +3,7 @@
 from datetime import datetime
 from typing import Any
 
-from pydantic import ConfigDict, EmailStr, Field, HttpUrl, model_validator
+from pydantic import ConfigDict, Field, HttpUrl, model_validator
 from typing_extensions import Self
 
 from backend.app.admin.schema.dept import GetDeptDetail
@@ -16,7 +16,7 @@ class AuthSchemaBase(SchemaBase):
     """User authentication base model"""
 
     username: str = Field(description='Username')
-    password: str | None = Field(description='Password')
+    password: str = Field(description='Password')
 
 
 class AuthLoginParam(AuthSchemaBase):
@@ -28,16 +28,19 @@ class AuthLoginParam(AuthSchemaBase):
 class AddUserParam(AuthSchemaBase):
     """Add user parameters"""
 
+    nickname: str | None = Field(None, description='Nickname')
+    email: CustomEmailStr | None = Field(None, description='Email')
+    phone: CustomPhoneNumber | None = Field(None, description='Phone number')
     dept_id: int = Field(description='Department ID')
     roles: list[int] = Field(description='Role ID list')
-    nickname: str | None = Field(None, description='Nickname')
 
 
 class AddOAuth2UserParam(AuthSchemaBase):
     """Add OAuth2 user parameters"""
 
+    password: str | None = Field(None, description='Password')
     nickname: str | None = Field(None, description='Nickname')
-    email: EmailStr = Field(description='Email')
+    email: CustomEmailStr | None = Field(None, description='Email')
     avatar: HttpUrl | None = Field(None, description='Avatar URL')
 
 
@@ -56,6 +59,8 @@ class UserInfoSchemaBase(SchemaBase):
     username: str = Field(description='Username')
     nickname: str = Field(description='Nickname')
     avatar: HttpUrl | None = Field(None, description='Avatar URL')
+    email: CustomEmailStr | None = Field(None, description='Email')
+    phone: CustomPhoneNumber | None = Field(None, description='Phone number')
 
 
 class UpdateUserParam(UserInfoSchemaBase):
@@ -72,12 +77,10 @@ class GetUserInfoDetail(UserInfoSchemaBase):
     dept_id: int | None = Field(None, description='Department ID')
     id: int = Field(description='User ID')
     uuid: str = Field(description='User UUID')
-    email: CustomEmailStr | None = Field(None, description='Email')
-    phone: CustomPhoneNumber | None = Field(None, description='Phone number')
     status: StatusType = Field(description='Status')
     is_superuser: bool = Field(description='Is superuser')
     is_staff: bool = Field(description='Is admin')
-    is_multi_login: bool = Field(description='Allow multi-terminal login')
+    is_multi_login: bool = Field(description='Allow multi-login')
     join_time: datetime = Field(description='Join time')
     last_login_time: datetime | None = Field(None, description='Last login time')
 
