@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 from fastapi import APIRouter, BackgroundTasks, Depends, Request, Response
 from fastapi_limiter.depends import RateLimiter
-from fastapi_oauth20 import FastAPIOAuth20, LinuxDoOAuth20
+from fastapi_oauth20 import FastAPIOAuth20, GoogleOAuth20
 from starlette.responses import RedirectResponse
 
 from backend.common.enums import UserSocialType
@@ -12,39 +12,36 @@ from backend.plugin.oauth2.service.oauth2_service import oauth2_service
 
 router = APIRouter()
 
-linux_do_client = LinuxDoOAuth20(settings.OAUTH2_LINUX_DO_CLIENT_ID, settings.OAUTH2_LINUX_DO_CLIENT_SECRET)
+google_client = GoogleOAuth20(settings.OAUTH2_GOOGLE_CLIENT_ID, settings.OAUTH2_GOOGLE_CLIENT_SECRET)
 
 
-@router.get('', summary='Get LinuxDo authorization link')
-async def get_linux_do_oauth2_url(request: Request) -> ResponseSchemaModel[str]:
-    auth_url = await linux_do_client.get_authorization_url(redirect_uri=f'{request.url}/callback')
+@router.get('', summary='获取 google 授权链接')
+async def get_google_oauth2_url(request: Request) -> ResponseSchemaModel[str]:
+    auth_url = await google_client.get_authorization_url(redirect_uri=f'{request.url}/callback')
     return response_base.success(data=auth_url)
 
 
 @router.get(
     '/callback',
-    summary='LinuxDo authorization auto redirect',
-    description=(
-        'After LinuxDo authorization, automatically redirect to the current address and get user info. '
-        'Automatically create a system user with the user info.'
-    ),
+    summary='google 授权自动重定向',
+    description='google 授权后，自动重定向到当前地址并获取用户信息，通过用户信息自动创建系统用户',
     dependencies=[Depends(RateLimiter(times=5, minutes=1))],
 )
-async def linux_do_oauth2_callback(
+async def google_oauth2_callback(
     request: Request,
     response: Response,
     background_tasks: BackgroundTasks,
-    oauth2: FastAPIOAuth20 = Depends(FastAPIOAuth20(linux_do_client, redirect_route_name='linux_do_oauth2_callback')),
+    oauth2: FastAPIOAuth20 = Depends(FastAPIOAuth20(google_client, redirect_route_name='google_oauth2_callback')),
 ):
     token, _state = oauth2
     access_token = token['access_token']
-    user = await linux_do_client.get_userinfo(access_token)
+    user = await google_client.get_userinfo(access_token)
     data = await oauth2_service.create_with_login(
         request=request,
         response=response,
         background_tasks=background_tasks,
         user=user,
-        social=UserSocialType.linux_do,
+        social=UserSocialType.google,
     )
     return RedirectResponse(
         url=f'{settings.OAUTH2_FRONTEND_REDIRECT_URI}?access_token={data.access_token}&session_uuid={data.session_uuid}'

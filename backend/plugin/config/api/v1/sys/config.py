@@ -14,14 +14,23 @@ from backend.plugin.config.schema.config import (
     CreateConfigParam,
     GetConfigDetail,
     UpdateConfigParam,
+    UpdateConfigsParam,
 )
 from backend.plugin.config.service.config_service import config_service
 
 router = APIRouter()
 
 
-@router.get('/{pk}', summary='Get config detail', dependencies=[DependsJwtAuth])
-async def get_config(pk: Annotated[int, Path(description='Config ID')]) -> ResponseSchemaModel[GetConfigDetail]:
+@router.get('/all', summary='Get all config parameters', dependencies=[DependsJwtAuth])
+async def get_all_configs(
+    type: Annotated[str | None, Query(description='Config parameter type')] = None,
+) -> ResponseSchemaModel[list[GetConfigDetail]]:
+    configs = await config_service.get_all(type=type)
+    return response_base.success(data=configs)
+
+
+@router.get('/{pk}', summary='Get config parameter detail', dependencies=[DependsJwtAuth])
+async def get_config(pk: Annotated[int, Path(description='Config parameter ID')]) -> ResponseSchemaModel[GetConfigDetail]:
     config = await config_service.get(pk=pk)
     return response_base.success(data=config)
 
@@ -55,6 +64,14 @@ async def get_configs_paged(
 async def create_config(obj: CreateConfigParam) -> ResponseModel:
     await config_service.create(obj=obj)
     return response_base.success()
+
+
+@router.put('', summary='Bulk update config parameters', dependencies=[Depends(RequestPermission('sys.config.edits')), DependsRBAC])
+async def bulk_update_config(objs: list[UpdateConfigsParam]) -> ResponseModel:
+    count = await config_service.bulk_update(objs=objs)
+    if count > 0:
+        return response_base.success()
+    return response_base.fail()
 
 
 @router.put(

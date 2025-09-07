@@ -1,6 +1,6 @@
 [plugin]
-summary = 'Code generation'
-version = '0.0.3'
+summary = 'Code Generation'
+version = '0.0.4'
 description = 'Generate general business code'
 author = 'wu-clan'
 

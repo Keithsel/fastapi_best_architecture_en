@@ -2,12 +2,12 @@
 # -*- coding: utf-8 -*-
 from datetime import datetime
 
-from sqlalchemy import DateTime, String
+from sqlalchemy import String
 from sqlalchemy.dialects.mysql import JSON, LONGTEXT
 from sqlalchemy.dialects.postgresql import TEXT
 from sqlalchemy.orm import Mapped, mapped_column
 
-from backend.common.model import DataClassBase, id_key
+from backend.common.model import DataClassBase, TimeZone, id_key
 from backend.utils.timezone import timezone
 
 
@@ -26,16 +26,16 @@ class OperaLog(DataClassBase):
     country: Mapped[str | None] = mapped_column(String(50), comment='Country')
     region: Mapped[str | None] = mapped_column(String(50), comment='Region')
     city: Mapped[str | None] = mapped_column(String(50), comment='City')
-    user_agent: Mapped[str] = mapped_column(String(255), comment='User Agent')
+    user_agent: Mapped[str] = mapped_column(String(255), comment='Request Header')
     os: Mapped[str | None] = mapped_column(String(50), comment='Operating System')
     browser: Mapped[str | None] = mapped_column(String(50), comment='Browser')
     device: Mapped[str | None] = mapped_column(String(50), comment='Device')
     args: Mapped[str | None] = mapped_column(JSON(), comment='Request Parameters')
-    status: Mapped[int] = mapped_column(comment='Operation Status (0 Exception 1 Normal)')
+    status: Mapped[int] = mapped_column(comment='Operation Status (0 Error, 1 Normal)')
     code: Mapped[str] = mapped_column(String(20), insert_default='200', comment='Operation Status Code')
     msg: Mapped[str | None] = mapped_column(LONGTEXT().with_variant(TEXT, 'postgresql'), comment='Message')
     cost_time: Mapped[float] = mapped_column(insert_default=0.0, comment='Request Duration (ms)')
-    opera_time: Mapped[datetime] = mapped_column(DateTime(timezone=True), comment='Operation Time')
+    opera_time: Mapped[datetime] = mapped_column(TimeZone, comment='Operation Time')
     created_time: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True), init=False, default_factory=timezone.now, comment='Created Time'
+        TimeZone, init=False, default_factory=timezone.now, comment='Creation Time'
     )

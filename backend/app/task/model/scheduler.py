@@ -7,7 +7,6 @@ from datetime import datetime
 from sqlalchemy import (
     JSON,
     Boolean,
-    DateTime,
     String,
     event,
 )
@@ -16,7 +15,7 @@ from sqlalchemy.dialects.postgresql import INTEGER, TEXT
 from sqlalchemy.orm import Mapped, mapped_column
 
 from backend.common.exception import errors
-from backend.common.model import Base, id_key
+from backend.common.model import Base, TimeZone, id_key
 from backend.core.conf import settings
 from backend.database.redis import redis_client
 from backend.utils.timezone import timezone
@@ -28,36 +27,28 @@ class TaskScheduler(Base):
     __tablename__ = 'task_scheduler'
 
     id: Mapped[id_key] = mapped_column(init=False)
-    name: Mapped[str] = mapped_column(String(50), unique=True, comment='Task name')
-    task: Mapped[str] = mapped_column(String(255), comment='Celery task to run')
-    args: Mapped[str | None] = mapped_column(JSON(), comment='Positional arguments for the task')
-    kwargs: Mapped[str | None] = mapped_column(JSON(), comment='Keyword arguments for the task')
-    queue: Mapped[str | None] = mapped_column(String(255), comment='Queue defined in CELERY_TASK_QUEUES')
-    exchange: Mapped[str | None] = mapped_column(String(255), comment='Low-level AMQP routing exchange')
-    routing_key: Mapped[str | None] = mapped_column(String(255), comment='Low-level AMQP routing key')
-    start_time: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), comment='Time when the task starts')
-    expire_time: Mapped[datetime | None] = mapped_column(
-        DateTime(timezone=True), comment='Deadline after which the task will not be triggered'
-    )
-    expire_seconds: Mapped[int | None] = mapped_column(
-        comment='Time difference in seconds after which the task will not be triggered'
-    )
-    type: Mapped[int] = mapped_column(comment='Schedule type (0 interval, 1 crontab)')
-    interval_every: Mapped[int | None] = mapped_column(comment='Interval period before the task runs again')
-    interval_period: Mapped[str | None] = mapped_column(String(255), comment='Type of interval between task runs')
-    crontab: Mapped[str | None] = mapped_column(
-        String(50), default='* * * * *', comment='Crontab schedule for the task'
-    )
+    name: Mapped[str] = mapped_column(String(50), unique=True, comment='Task Name')
+    task: Mapped[str] = mapped_column(String(255), comment='Celery Task to Run')
+    args: Mapped[str | None] = mapped_column(JSON(), comment='Positional Arguments for the Task')
+    kwargs: Mapped[str | None] = mapped_column(JSON(), comment='Keyword Arguments for the Task')
+    queue: Mapped[str | None] = mapped_column(String(255), comment='Queue Defined in CELERY_TASK_QUEUES')
+    exchange: Mapped[str | None] = mapped_column(String(255), comment='Low-level AMQP Routing Exchange')
+    routing_key: Mapped[str | None] = mapped_column(String(255), comment='Low-level AMQP Routing Key')
+    start_time: Mapped[datetime | None] = mapped_column(TimeZone, comment='Task Start Trigger Time')
+    expire_time: Mapped[datetime | None] = mapped_column(TimeZone, comment='Task Expiry Time')
+    expire_seconds: Mapped[int | None] = mapped_column(comment='Time Difference in Seconds Until Task Expires')
+    type: Mapped[int] = mapped_column(comment='Schedule Type (0 Interval, 1 Crontab)')
+    interval_every: Mapped[int | None] = mapped_column(comment='Interval Period Before Task Runs Again')
+    interval_period: Mapped[str | None] = mapped_column(String(255), comment='Type of Interval Between Runs')
+    crontab: Mapped[str | None] = mapped_column(String(50), default='* * * * *', comment='Crontab Schedule for Task')
     one_off: Mapped[bool] = mapped_column(
-        Boolean().with_variant(INTEGER, 'postgresql'), default=False, comment='Whether to run only once'
+        Boolean().with_variant(INTEGER, 'postgresql'), default=False, comment='Whether to Run Only Once'
     )
     enabled: Mapped[bool] = mapped_column(
-        Boolean().with_variant(INTEGER, 'postgresql'), default=True, comment='Whether the task is enabled'
+        Boolean().with_variant(INTEGER, 'postgresql'), default=True, comment='Whether the Task is Enabled'
     )
-    total_run_count: Mapped[int] = mapped_column(default=0, comment='Total number of times the task has triggered')
-    last_run_time: Mapped[datetime | None] = mapped_column(
-        DateTime(timezone=True), default=None, comment='Last time the task was triggered'
-    )
+    total_run_count: Mapped[int] = mapped_column(default=0, comment='Total Number of Times Task Triggered')
+    last_run_time: Mapped[datetime | None] = mapped_column(TimeZone, default=None, comment='Last Time Task Was Triggered')
     remark: Mapped[str | None] = mapped_column(
         LONGTEXT().with_variant(TEXT, 'postgresql'), default=None, comment='Remarks'
     )

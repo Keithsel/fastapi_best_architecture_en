@@ -41,5 +41,11 @@ class GetMenuDetail(MenuSchemaBase):
     model_config = ConfigDict(from_attributes=True)
 
     id: int = Field(description='Menu ID')
-    created_time: datetime = Field(description='Created Time')
-    updated_time: datetime | None = Field(None, description='Updated Time')
+    created_time: datetime = Field(description='Creation Time')
+    updated_time: datetime | None = Field(None, description='Update Time')
+
+
+class GetMenuTree(GetMenuDetail):
+    """Get Menu Tree"""
+
+    children: list['GetMenuTree'] | None = Field(None, description='Submenus')

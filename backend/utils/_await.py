@@ -20,14 +20,15 @@ class _TaskRunner:
 
     def close(self):
         """Close the event loop and clean up"""
-        if self.__loop:
-            self.__loop.stop()
+        with self.__lock:
+            if self.__loop:
+                self.__loop.call_soon_threadsafe(self.__loop.stop)
+            if self.__thread and self.__thread.is_alive():
+                self.__thread.join()
             self.__loop = None
-        if self.__thread:
-            self.__thread.join()
             self.__thread = None
-        name = f'TaskRunner-{threading.get_ident()}'
-        _runner_map.pop(name, None)
+            name = f'TaskRunner-{threading.get_ident()}'
+            _runner_map.pop(name, None)
 
     def _target(self):
         """Target function for the background thread"""
@@ -52,13 +53,14 @@ _runner_map = weakref.WeakValueDictionary()
 
 
 def run_await(coro: Callable[..., Awaitable[T]] | Callable[..., Coroutine[Any, Any, T]]) -> Callable[..., T]:
-    """Wrap a coroutine in a function that runs on a background event loop until it completes"""
+    """Wrap coroutine in a function and block until it finishes"""
 
     @wraps(coro)
     def wrapped(*args, **kwargs):
         inner = coro(*args, **kwargs)
         if not asyncio.iscoroutine(inner) and not asyncio.isfuture(inner):
-            raise TypeError(f'Expected coroutine, got {type(inner)}')
+            raise TypeError(f'Expected coroutine or future, got {type(inner)}')
+
         try:
             # If event loop is running, use task runner
             asyncio.get_running_loop()
@@ -68,7 +70,11 @@ def run_await(coro: Callable[..., Awaitable[T]] | Callable[..., Coroutine[Any, A
             return _runner_map[name].run(inner)
         except RuntimeError:
             # If not, create a new event loop
-            loop = asyncio.get_event_loop()
+            try:
+                loop = asyncio.get_event_loop()
+            except RuntimeError:
+                loop = asyncio.new_event_loop()
+                asyncio.set_event_loop(loop)
             return loop.run_until_complete(inner)
 
     wrapped.__doc__ = coro.__doc__

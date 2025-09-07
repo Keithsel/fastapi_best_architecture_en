@@ -1,15 +1,13 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-import inspect
 import os.path
 
-from backend.common.log import log
 from backend.core.path_conf import BASE_PATH
-from backend.utils.import_parse import import_module_cached
+from backend.utils.import_parse import get_model_object
 
 
-def get_app_models():
-    """Get all model classes from app"""
+def get_app_models() -> list[type]:
+    """Get all model classes in the app"""
     app_path = os.path.join(BASE_PATH, 'app')
     list_dirs = os.listdir(app_path)
 
@@ -19,23 +17,15 @@ def get_app_models():
         if os.path.isdir(os.path.join(app_path, d)) and d != '__pycache__':
             apps.append(d)
 
-    classes = []
+    objs = []
 
     for app in apps:
-        try:
-            module_path = f'backend.app.{app}.model'
-            module = import_module_cached(module_path)
-        except ModuleNotFoundError as e:
-            log.warning(f'Module {app} does not contain model configuration: {e}')
-            continue
-        except Exception as e:
-            raise e
+        module_path = f'backend.app.{app}.model'
+        obj = get_model_object(module_path)
+        if obj:
+            objs.append(obj)
 
-        for name, obj in inspect.getmembers(module):
-            if inspect.isclass(obj):
-                classes.append(obj)
-
-    return classes
+    return objs
 
 
 # Import all app models for auto-creating db tables

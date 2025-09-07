@@ -1,6 +1,6 @@
 [plugin]
-summary = 'Notice Announcement'
-version = '0.0.1'
+summary = 'System Notices'
+version = '0.0.2'
 description = 'Publish internal system notices and announcements'
 author = 'wu-clan'
 

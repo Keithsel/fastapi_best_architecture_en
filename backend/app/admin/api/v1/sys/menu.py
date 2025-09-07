@@ -4,7 +4,7 @@ from typing import Annotated, Any
 
 from fastapi import APIRouter, Depends, Path, Query, Request
 
-from backend.app.admin.schema.menu import CreateMenuParam, GetMenuDetail, UpdateMenuParam
+from backend.app.admin.schema.menu import CreateMenuParam, GetMenuDetail, GetMenuTree, UpdateMenuParam
 from backend.app.admin.service.menu_service import menu_service
 from backend.common.response.response_schema import ResponseModel, ResponseSchemaModel, response_base
 from backend.common.security.jwt import DependsJwtAuth
@@ -30,9 +30,9 @@ async def get_menu(pk: Annotated[int, Path(description='Menu ID')]) -> ResponseS
 
 @router.get('', summary='Get menu tree', dependencies=[DependsJwtAuth])
 async def get_menu_tree(
-    title: Annotated[str | None, Query(description='Menu title')] = None,
+    title: Annotated[str | None, Query(description='Menu Title')] = None,
     status: Annotated[int | None, Query(description='Status')] = None,
-) -> ResponseSchemaModel[list[dict[str, Any]]]:
+) -> ResponseSchemaModel[list[GetMenuTree]]:
     menu = await menu_service.get_tree(title=title, status=status)
     return response_base.success(data=menu)
 

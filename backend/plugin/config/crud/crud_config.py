@@ -23,7 +23,7 @@ class CRUDConfig(CRUDPlus[Config]):
         """
         return await self.select_model_by_column(db, id=pk)
 
-    async def get_by_type(self, db: AsyncSession, type: str) -> Sequence[Config | None]:
+    async def get_all(self, db: AsyncSession, type: str) -> Sequence[Config | None]:
         """
         Get parameter configuration by type
 
@@ -80,6 +80,16 @@ class CRUDConfig(CRUDPlus[Config]):
         :return:
         """
         return await self.update_model(db, pk, obj)
+
+    async def bulk_update(self, db: AsyncSession, objs: list[UpdateConfigParam]) -> int:
+        """
+        批量更新参数配置
+
+        :param db: 数据库会话
+        :param objs: 批量更新参数配置参数
+        :return:
+        """
+        return await self.bulk_update_models(db, objs)
 
     async def delete(self, db: AsyncSession, pks: list[int]) -> int:
         """

@@ -34,6 +34,12 @@ class GetDeptDetail(DeptSchemaBase):
     model_config = ConfigDict(from_attributes=True)
 
     id: int = Field(description='Department ID')
-    del_flag: bool = Field(description='Deleted')
-    created_time: datetime = Field(description='Created Time')
-    updated_time: datetime | None = Field(None, description='Updated Time')
+    del_flag: bool = Field(description='Deleted Flag')
+    created_time: datetime = Field(description='Creation Time')
+    updated_time: datetime | None = Field(None, description='Update Time')
+
+
+class GetDeptTree(GetDeptDetail):
+    """Get Department Tree"""
+
+    children: list['GetDeptTree'] | None = Field(None, description='Submenus')

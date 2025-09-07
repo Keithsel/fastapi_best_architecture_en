@@ -1,6 +1,6 @@
 [plugin]
 summary = 'Email'
-version = '0.0.1'
+version = '0.0.2'
 description = 'Send emails, such as verification codes, notifications, etc.'
 author = 'wu-clan'
 

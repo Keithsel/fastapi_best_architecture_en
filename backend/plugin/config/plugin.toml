@@ -1,7 +1,7 @@
 [plugin]
 summary = 'Parameter Configuration'
-version = '0.0.1'
-description = 'Usually used for frontend project data display'
+version = '0.0.2'
+description = 'Usually used for dynamic system parameter configuration / frontend project data display'
 author = 'wu-clan'
 
 [app]

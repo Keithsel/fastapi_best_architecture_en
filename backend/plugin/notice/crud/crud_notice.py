@@ -23,9 +23,25 @@ class CRUDNotice(CRUDPlus[Notice]):
         """
         return await self.select_model(db, pk)
 
-    async def get_list(self) -> Select:
-        """Get notice list"""
-        return await self.select_order('created_time', 'desc')
+    async def get_list(self, title: str, type: int | None, status: int | None) -> Select:
+        """
+        Get notice list
+
+        :param title: Notice title
+        :param type: Notice type
+        :param status: Notice status
+        :return:
+        """
+        filters = {}
+
+        if title is not None:
+            filters['title__like'] = f'%{title}%'
+        if type is not None:
+            filters['type'] = type
+        if status is not None:
+            filters['status'] = status
+
+        return await self.select_order('created_time', 'desc', **filters)
 
     async def get_all(self, db: AsyncSession) -> Sequence[Notice]:
         """

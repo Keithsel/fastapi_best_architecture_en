@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-from typing import Annotated, Any
+from typing import Annotated
 
 from fastapi import APIRouter, Depends, Path, Query, Request
 
-from backend.app.admin.schema.dept import CreateDeptParam, GetDeptDetail, UpdateDeptParam
+from backend.app.admin.schema.dept import CreateDeptParam, GetDeptDetail, GetDeptTree, UpdateDeptParam
 from backend.app.admin.service.dept_service import dept_service
 from backend.common.response.response_schema import ResponseModel, ResponseSchemaModel, response_base
 from backend.common.security.jwt import DependsJwtAuth
@@ -23,11 +23,11 @@ async def get_dept(pk: Annotated[int, Path(description='Department ID')]) -> Res
 @router.get('', summary='Get department tree', dependencies=[DependsJwtAuth])
 async def get_dept_tree(
     request: Request,
-    name: Annotated[str | None, Query(description='Department name')] = None,
-    leader: Annotated[str | None, Query(description='Department leader')] = None,
-    phone: Annotated[str | None, Query(description='Contact phone')] = None,
+    name: Annotated[str | None, Query(description='Department Name')] = None,
+    leader: Annotated[str | None, Query(description='Department Leader')] = None,
+    phone: Annotated[str | None, Query(description='Contact Phone')] = None,
     status: Annotated[int | None, Query(description='Status')] = None,
-) -> ResponseSchemaModel[list[dict[str, Any]]]:
+) -> ResponseSchemaModel[list[GetDeptTree]]:
     dept = await dept_service.get_tree(request=request, name=name, leader=leader, phone=phone, status=status)
     return response_base.success(data=dept)
 

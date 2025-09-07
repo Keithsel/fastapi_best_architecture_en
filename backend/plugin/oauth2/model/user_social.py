@@ -19,8 +19,8 @@ class UserSocial(Base):
     __tablename__ = 'sys_user_social'
 
     id: Mapped[id_key] = mapped_column(init=False)
-    sid: Mapped[str] = mapped_column(String(20), comment='Third-party user ID')
-    source: Mapped[str] = mapped_column(String(20), comment='Third-party source')
+    sid: Mapped[str] = mapped_column(String(255), comment='Third-party user ID')
+    source: Mapped[str] = mapped_column(String(20), comment='Third-party user source')
 
     # One-to-many relationship for user social info
     user_id: Mapped[int] = mapped_column(

@@ -21,7 +21,13 @@ from backend.plugin.dict.service.dict_type_service import dict_type_service
 router = APIRouter()
 
 
-@router.get('/{pk}', summary='Get dictionary type detail', dependencies=[DependsJwtAuth])
+@router.get('/all', summary='Get all dictionary data', dependencies=[DependsJwtAuth])
+async def get_all_dict_types() -> ResponseSchemaModel[list[GetDictTypeDetail]]:
+    data = await dict_type_service.get_all()
+    return response_base.success(data=data)
+
+
+@router.get('/{pk}', summary='Get dictionary type details', dependencies=[DependsJwtAuth])
 async def get_dict_type(
     pk: Annotated[int, Path(description='Dictionary type ID')],
 ) -> ResponseSchemaModel[GetDictTypeDetail]:
