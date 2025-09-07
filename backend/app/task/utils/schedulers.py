@@ -455,4 +455,3 @@ def acquire_distributed_beat_lock(sender=None, **kwargs):
     run_await(lock.acquire)()
     logger.info('beat: Acquired lock')
     scheduler.lock = lock
-

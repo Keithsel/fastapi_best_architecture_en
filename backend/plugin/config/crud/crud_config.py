@@ -83,10 +83,10 @@ class CRUDConfig(CRUDPlus[Config]):
 
     async def bulk_update(self, db: AsyncSession, objs: list[UpdateConfigParam]) -> int:
         """
-        批量更新参数配置
+        Bulk update parameter configurations
 
-        :param db: 数据库会话
-        :param objs: 批量更新参数配置参数
+        :param db: Database session
+        :param objs: Bulk update parameter configuration parameters
         :return:
         """
         return await self.bulk_update_models(db, objs)

@@ -48,7 +48,9 @@ class TaskScheduler(Base):
         Boolean().with_variant(INTEGER, 'postgresql'), default=True, comment='Whether the Task is Enabled'
     )
     total_run_count: Mapped[int] = mapped_column(default=0, comment='Total Number of Times Task Triggered')
-    last_run_time: Mapped[datetime | None] = mapped_column(TimeZone, default=None, comment='Last Time Task Was Triggered')
+    last_run_time: Mapped[datetime | None] = mapped_column(
+        TimeZone, default=None, comment='Last Time Task Was Triggered'
+    )
     remark: Mapped[str | None] = mapped_column(
         LONGTEXT().with_variant(TEXT, 'postgresql'), default=None, comment='Remarks'
     )

@@ -4,7 +4,7 @@ from backend.common.enums import IntEnum
 
 
 class NoticeType(IntEnum):
-    """通知公告类型"""
+    """Notice and Announcement Type"""
 
     NOTICE = 0
     ANNOUNCEMENT = 1

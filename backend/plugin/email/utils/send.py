@@ -97,7 +97,9 @@ async def send_email(
         configs = {d['key']: d['value'] for d in select_list_serialize(dynamic_config)}
         if configs.get(_status_key):
             if len(dynamic_config) < 6:
-                raise errors.NotFoundError(msg='Missing email dynamic configuration, please check system parameter configuration - email configuration')
+                raise errors.NotFoundError(
+                    msg='Missing email dynamic configuration, please check system parameter configuration - email configuration'
+                )
             email_host = configs.get(_host_key)
             email_port = int(configs.get(_port_key, 0))
             email_ssl = True if configs.get(_ssl_key, '') == str(StatusType.enable.value) else False

@@ -27,9 +27,9 @@ class UpdateConfigParam(ConfigSchemaBase):
 
 
 class UpdateConfigsParam(UpdateConfigParam):
-    """批量更新参数配置参数"""
+    """Batch update configuration parameters"""
 
-    id: int = Field(description='参数配置 ID')
+    id: int = Field(description='Configuration parameter ID')
 
 
 class GetConfigDetail(ConfigSchemaBase):

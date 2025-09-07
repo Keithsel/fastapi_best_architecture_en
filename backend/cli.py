@@ -157,7 +157,9 @@ def generate(gen: bool) -> None:
         results = run_await(gen_business_service.get_all)()
 
         if not results:
-            raise cappa.Exit('[red]No available code generation business! Please import using the import command first![/]')
+            raise cappa.Exit(
+                '[red]No available code generation business! Please import using the import command first![/]'
+            )
 
         table = Table(show_header=True, header_style='bold magenta')
         table.add_column('Business ID', style='cyan', no_wrap=True, justify='center')
@@ -307,7 +309,9 @@ class Import:
         await import_table(self.app, self.table_schema, self.table_name)
 
 
-@cappa.command(name='codegen', help='Code generation (for full experience, deploy fba vben frontend project)', default_long=True)
+@cappa.command(
+    name='codegen', help='Code generation (for full experience, deploy fba vben frontend project)', default_long=True
+)
 @dataclass
 class CodeGenerate:
     gen: Annotated[

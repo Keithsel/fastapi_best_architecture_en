@@ -30,7 +30,9 @@ async def get_all_configs(
 
 
 @router.get('/{pk}', summary='Get config parameter detail', dependencies=[DependsJwtAuth])
-async def get_config(pk: Annotated[int, Path(description='Config parameter ID')]) -> ResponseSchemaModel[GetConfigDetail]:
+async def get_config(
+    pk: Annotated[int, Path(description='Config parameter ID')],
+) -> ResponseSchemaModel[GetConfigDetail]:
     config = await config_service.get(pk=pk)
     return response_base.success(data=config)
 
@@ -66,7 +68,11 @@ async def create_config(obj: CreateConfigParam) -> ResponseModel:
     return response_base.success()
 
 
-@router.put('', summary='Bulk update config parameters', dependencies=[Depends(RequestPermission('sys.config.edits')), DependsRBAC])
+@router.put(
+    '',
+    summary='Bulk update config parameters',
+    dependencies=[Depends(RequestPermission('sys.config.edits')), DependsRBAC],
+)
 async def bulk_update_config(objs: list[UpdateConfigsParam]) -> ResponseModel:
     count = await config_service.bulk_update(objs=objs)
     if count > 0:

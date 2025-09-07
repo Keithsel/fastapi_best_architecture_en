@@ -5,11 +5,11 @@ from celery.backends.database.session import SessionManager as CelerySessionMana
 
 class SessionManager(CelerySessionManager):
     """
-    重写 celery SessionManager
+    Override celery SessionManager
     """
 
     def __init__(self):
         super().__init__()
 
-        # 禁止自动创建 celery 内部定义的任务结果表
+        # Disable automatic creation of celery's internally defined task result tables
         self.prepared = True

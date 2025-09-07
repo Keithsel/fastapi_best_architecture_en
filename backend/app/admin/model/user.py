@@ -44,7 +44,9 @@ class User(Base):
     is_multi_login: Mapped[bool] = mapped_column(
         Boolean().with_variant(INTEGER, 'postgresql'), default=False, comment='Allow Multiple Login (0 No 1 Yes)'
     )
-    join_time: Mapped[datetime] = mapped_column(TimeZone, init=False, default_factory=timezone.now, comment='Registration Time')
+    join_time: Mapped[datetime] = mapped_column(
+        TimeZone, init=False, default_factory=timezone.now, comment='Registration Time'
+    )
     last_login_time: Mapped[datetime | None] = mapped_column(
         TimeZone, init=False, onupdate=timezone.now, comment='Last Login'
     )

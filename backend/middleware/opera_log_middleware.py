@@ -67,7 +67,9 @@ class OperaLogMiddleware(BaseHTTPMiddleware):
             except Exception as e:
                 elapsed = (time.perf_counter() - request.state.perf_time) * 1000
                 code = getattr(e, 'code', StandardResponseCode.HTTP_500)  # Compatible with SQLAlchemy exception usage
-                msg = getattr(e, 'msg', str(e))  # Not recommended to use traceback module to get error info, may expose code info
+                msg = getattr(
+                    e, 'msg', str(e)
+                )  # Not recommended to use traceback module to get error info, may expose code info
                 status = StatusType.disable
                 error = e
                 log.error(f'Request exception: {str(e)}')

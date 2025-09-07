@@ -34,9 +34,9 @@ class ConfigService:
     @staticmethod
     async def get_all(*, type: str | None):
         """
-        获取所有参数配置
+        Get all configuration parameters
 
-        :param type: 参数配置类型
+        :param type: Configuration parameter type
         :return:
         """
         async with async_db_session() as db:
@@ -90,9 +90,9 @@ class ConfigService:
     @staticmethod
     async def bulk_update(*, objs: list[UpdateConfigsParam]) -> int:
         """
-        批量更新参数配置
+        Bulk update configuration parameters
 
-        :param objs: 参数配置批量更新参数
+        :param objs: Bulk update configuration parameter parameters
         :return:
         """
         async with async_db_session.begin() as db:
@@ -100,11 +100,11 @@ class ConfigService:
                 for obj in objs:
                     config = await config_dao.get(db, obj.id)
                     if not config:
-                        raise errors.NotFoundError(msg='参数配置不存在')
+                        raise errors.NotFoundError(msg='Configuration parameter does not exist')
                     if config.key != obj.key:
                         config = await config_dao.get_by_key(db, obj.key)
                         if config:
-                            raise errors.ConflictError(msg=f'参数配置 {obj.key} 已存在')
+                            raise errors.ConflictError(msg=f'Configuration parameter {obj.key} already exists')
             count = await config_dao.bulk_update(db, objs)
             return count
 

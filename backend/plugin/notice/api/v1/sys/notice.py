@@ -32,9 +32,9 @@ async def get_notice(pk: Annotated[int, Path(description='Notice ID')]) -> Respo
 )
 async def get_notices_paged(
     db: CurrentSession,
-    title: Annotated[str | None, Query(description='标题')] = None,
-    type: Annotated[int | None, Query(description='类型')] = None,
-    status: Annotated[int | None, Query(description='状态')] = None,
+    title: Annotated[str | None, Query(description='Title')] = None,
+    type: Annotated[int | None, Query(description='Type')] = None,
+    status: Annotated[int | None, Query(description='Status')] = None,
 ) -> ResponseSchemaModel[PageData[GetNoticeDetail]]:
     notice_select = await notice_service.get_select(title=title, type=type, status=status)
     page_data = await paging_data(db, notice_select)

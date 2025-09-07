@@ -25,9 +25,9 @@ class CRUDDictType(CRUDPlus[DictType]):
 
     async def get_all(self, db: AsyncSession) -> Sequence[DictType]:
         """
-        获取所有字典类型
+        Get all dictionary types
 
-        :param db: 数据库会话
+        :param db: Database session
         :return:
         """
         return await self.select_models(db, load_strategies={'datas': 'noload'})
